@@ -27,6 +27,7 @@ import sys
 # For getting the name and definition text of a function.
 define_re = re.compile('define\s*(?P<name>\S+)\s*{(?P<definition>[^}]*)}\s*')
 
+
 class Functions:
     """Return a function for a given symbol. Also maintains
     a list of user defined functions."""
@@ -45,7 +46,7 @@ class Functions:
             '>': '_gt',
             '<=': '_lte',
             '>=': '_gte',
-            'str_cat': '_add', # Go python!
+            'str_cat': '_add',  # Go python!
             'if': '_if',
             '%': '_mod',
             '%/': '_divmod',
@@ -59,7 +60,7 @@ class Functions:
         """
         if not isinstance(what, str):
             return False, None
-        elif self.fnmap.has_key(what):
+        elif what in self.fnmap:
             # Look in the function map...
             function = self.fnmap[what]
             if isinstance(function, list):
@@ -241,7 +242,6 @@ class CatStack:
         self.stack = stack
         self.funcs = Functions(funcs)
 
-
     def define(self, line):
         """If a line starts with 'define', then it's a function declaration"""
         match = define_re.match(line)
@@ -317,7 +317,7 @@ class CatStack:
             try:
                 defined, func = getFunction(atom)
             except:
-                raise Exception, "Error fetching %s" % atom
+                raise Exception("Error fetching %s" % atom)
             if defined:
                 if callable(func):
                     # It's a function i.e. built in.
@@ -365,6 +365,7 @@ class CatStack:
         else:
             state = ' '.join(map(repr, self.stack))
         return 'main stack: %s' % state
+
 
 def runtests():
     cs = CatStack()
@@ -424,6 +425,7 @@ class CatInteractive(cmd.Cmd):
     prompt = '>> '
     intro = """Python Cat Programming Language interpreter (v%s).
 Type "quit" to exit.""" % __version__
+
     def __init__(self):
         self.cat = CatStack()
         # Flag, whether we're writing a definition or not.
@@ -436,7 +438,7 @@ Type "quit" to exit.""" % __version__
         sys.exit(0)
 
     def default(self, line):
-        result = self.cat.eval(line.strip())
+        self.cat.eval(line.strip())
         print self.cat
 
     def emptyline(self):
@@ -454,5 +456,5 @@ if __name__ == '__main__':
             cat.eval(' '.join(sys.argv[2:]))
             print cat
     else:
-       cint = CatInteractive()
-       cint.cmdloop()
+        cint = CatInteractive()
+        cint.cmdloop()
