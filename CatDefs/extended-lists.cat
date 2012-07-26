@@ -1,0 +1,30 @@
+define ( : ( A' -> A' [])
+{{
+  desc:
+    List initializer.
+  test:
+    in: nil
+    out: [] list
+}}
+{ nil }
+
+define , : (list item -> list)
+{{
+  desc:
+    List separator.
+}}
+{ cons }
+
+define ) : (list item -> list)
+{{
+  desc:
+    List terminator.
+}}
+{ cons }
+
+define () : (A' -> A' [])
+{{
+  desc:
+    Empty list.
+}}
+{ nil }

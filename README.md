@@ -11,8 +11,14 @@ on github would be a good idea.
 
 Otherwise do with this as you will.
 
-
-Licence
+Update!
 -------
 
-This is made available under the MIT Licence. See the file `LICENCE` for details.
+Wayne Wiitanen has contributed a large update:
+
+* Implemented all cat words
+* Namespaces
+* Importing modules
+
+Among other things.
+

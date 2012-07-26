@@ -1,0 +1,20 @@
+# This file is for custom definitions
+# It is loaded either by executing the #allDefs word, or by "<path to CatDefs>/user.cat" #load
+
+# Example definition:
+# define poly_eval : (list:coeffs nbr:x -> nbr)
+# {{
+#     desc:
+#         evaluates a polynomial
+#         [0] is the argument, [-1] is the list of coefficients in descending power order
+#     test:
+#         in: [1 2 3] list 2.3 poly_eval
+#         out: 12.89
+#     tags:
+#         custom,polynomial
+# }}
+# {
+#   swap count dec swapd powers [mul] bin_op 0 [add] fold
+# }
+
+"user.cat is empty!" 'green writeln

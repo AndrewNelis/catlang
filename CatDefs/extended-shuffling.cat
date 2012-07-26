@@ -1,0 +1,120 @@
+
+// ==================================
+// Stack shuffling mnemonic operators
+// Note: 'deps:xxxx' is a metasyntactical element meaning that the word being defined
+//       has a dependency on word xxxx
+
+// 1 to 2
+define aa : (a -> a a) { dup }
+
+// 2 to 2
+define ab : (a b -> a b) { }
+define aa : (a b -> a a) { pop dup }
+define ba : (a b -> b a) { swap }
+define bb : (a b -> b b) { [pop] dip dup }
+
+// 3 to 3
+define abc : (a b c -> a b c) { }
+define acb : (a b c -> a c b) { swap }
+define bac : (a b c -> b a c) { [swap] dip }
+define bca : (a b c -> b c a) { [swap] dip swap }
+define cab : (a b c -> c a b) { swap [swap] dip }
+define cba : (a b c -> c b a) {{ deps:cab }} { cab swap }
+
+// 4 to 4
+define abcd : (a b c d -> a b c d) { }
+define abdc : (a b c d -> a b d c) { swap }
+define acdb : (a b c d -> a c d b) {{ deps:bca }} { bca }
+define acbd : (a b c d -> a c b d) {{ deps:bac }} { bac }
+define adbc : (a b c d -> a d b c) {{ deps:cab }} { cab }
+define adcb : (a b c d -> a d c b) {{ deps:cba }} { cba }
+define bacd : (a b c d -> b a c d) {{ deps:bac }} { [bac] dip }
+define badc : (a b c d -> b a d c) {{ deps:bacd }} { bacd swap }
+define bcad : (a b c d -> b c a d) {{ deps:bacd }} { bacd bac }
+define bcda : (a b c d -> b c d a) {{ deps:bacd,bca }} { bacd bca }
+define bdac : (a b c d -> b d a c) {{ deps:bacd,cab }} { bacd cab }
+define bdca : (a b c d -> b d c a) {{ deps:bacd,cba }} { bacd cba }
+define cabd : (a b c d -> c a b d) {{ deps:cab }} { [cab] dip }
+define cadb : (a b c d -> c a d b) {{ deps:cabd }} { cabd swap }
+define cbad : (a b c d -> c b a d) {{ deps:cabd,bac }} { cabd bac }
+define cbda : (a b c d -> c b d a) {{ deps:cabd,bca }} { cabd bca }
+define cdab : (a b c d -> c d a b) {{ deps:cabd }} { cabd cab }
+define cdba : (a b c d -> c d b a) {{ deps:cabd,cba }} { cabd cba }
+define dabc : (a b c d -> d a b c) {{ deps:cab }} { swap [cab] dip }
+define dacb : (a b c d -> d a c b) {{ deps:dabc }} { dabc swap }
+define dbac : (a b c d -> d b a c) {{ deps:dabc,bac }} { dabc bac }
+define dbca : (a b c d -> d b c a) {{ deps:dabc,bca }} { dabc bca }
+define dcab : (a b c d -> d c a b) {{ deps:dabc }} { dabc cab }
+define dcba : (a b c d -> d c b a) {{ deps:dabc,cba }} { dabc cba }
+
+// 1 to 3
+define aaa : (a -> a a a) { dup dup }
+
+// 1 to 4
+define aaaa : (a -> a a a a) { dup dup dup }
+
+// 2 to 3
+define aab : (a b -> a a b) { [dup] dip }
+define aba : (a b -> a b a) { [dup] dip swap }
+define abb : (a b -> a b b) { dup }
+define baa : (a b -> b a a) { swap dup }
+define bab : (a b -> b a b) {{ deps:cab }} { dup cab }
+define bba : (a b -> b b a) { swap [dup] dip }
+define bbb : (a b -> b b b) { [pop] dip dup dup }
+
+// 2 to 4
+define aaab : (a b -> a a a b) {{ deps:aaa }} { [aaa] dip }
+define aaba : (a b -> a a b a) {{ deps:aaab }} { aaab swap }
+define aabb : (a b -> a a b b) {{ deps:aab }} { aab dup }
+define abaa : (a b -> a b a a) {{ deps:abaa }} { aba dup }
+define abab : (a b -> a b a b) {{ deps:aba }} { aba aba }
+define abba : (a b -> a b b a) {{ deps:abab }} { abab swap }
+define abbb : (a b -> a b b b) {{ deps:abb }} { abb dup }
+define baaa : (a b -> b a a a) {{ deps:aaa }} { swap aaa }
+define baab : (a b -> b a a b) {{ deps:bab,aab }} { bab aab }
+define babb : (a b -> b a b b) {{ deps:bab }} { bab dup }
+define bbab : (a b -> b b a b) {{ deps:bbba }} { bbba swap }
+define bbba : (a b -> b b b a) {{ deps:aaab }} { swap aaab }
+define bbbb : (a b -> b b b b) {{ deps:aaaa }} { [pop] dip aaaa }
+
+// 3 to 4
+define aabc : (a b c -> a a b c) {{ deps:aab }} { [aab] dip }
+define aacb : (a b c -> a a c b) {{ deps:aabc,acb }} { acb aabc }
+define abac : (a b c -> a b a c) {{ deps:aba }} { [aba] dip }
+define abbc : (a b c -> a b b c) {{ deps:aab aab }} { }
+define abca : (a b c -> a b c a) {{ deps:aabc,bca }} { aabc bca }
+define abcc : (a b c -> a b c c) {{ }} { dup }
+define acab : (a b c -> a c a b) {{ deps:abac,acb }} { acb abac }
+define acba : (a b c -> a c b a) {{ deps:abca,acb }} { acb abca}
+define acbb : (a b c -> a c b b) {{ deps:acb }} { acb dup}
+define accb : (a b c -> a c c b) {{ deps:abbc,acb }} { acb abbc }
+define baac : (a b c -> b a a c) {{ deps:abbc,bac }} { bac abbc }
+define babc : (a b c -> b a b c) {{ deps:abac,bac }} { bac abac }
+define bacb : (a b c -> b a c b) {{ deps:abca,bac }} { bac abca }
+define bacc : (a b c -> b a c c) {{ deps:bac }} { bac dup }
+define bbac : (a b c -> b b a c) {{ deps:aabc,bac }} { bac aabc }
+define bbca : (a b c -> b b c a) {{ deps:aabc,bca }} {  bca aabc }
+define bcaa : (a b c -> b c a a) {{ deps:bca }} { bca dup }
+define bcab : (a b c -> b c a b) {{ deps:abca,bca }} { bca abca }
+define bcba : (a b c -> b c b a) {{ deps:abac,bca }} { bca abac }
+define bcca : (a b c -> b c c a) {{ deps:abbc,bca }} { bca abbc }
+define caab : (a b c -> c a a b) {{ deps:abbc,cab }} { cab abbc }
+define cabb : (a b c -> c a b b) {{ deps:cab }} { cab dup }
+define cabc : (a b c -> c a b c) {{ deps:abca,cab }} { cab abca }
+define cacb : (a b c -> c a c b) {{ deps:abac,cab }} { cab abac }
+define cbaa : (a b c -> c b a a) {{ deps:cba }} { cba dup }
+define cbac : (a b c -> c b a c) {{ deps:abca,cba }} { cba abca }
+define cbba : (a b c -> c b b a) {{ deps:abbc,cba }} { cba abbc }
+define cbca : (a b c -> c b c a) {{ deps:abac,cba }} { cba abac }
+define ccab : (a b c -> c c a b) {{ deps:aabc,cab }} { cab aabc }
+define ccba : (a b c -> c c b a) {{ deps:aabc,cba }} { cba aabc }
+
+// Copying operators
+define dup_ab : (a b -> a b a b) {{ deps:abab }} { abab }
+define dup_ba : (a b -> a b b a) {{ deps:abba }} { abba }
+define dup_abc : (a b c -> a b c a b c) {{ deps:abca }} { abca abca abca }
+define dup_acb : (a b c -> a b c a c b) {{ deps:dup_abc,acb }} { dup_abc acb }
+define dup_bac : (a b c -> a b c b a c) {{ deps:dup_abc,bac }} { dup_abc bac }
+define dup_bca : (a b c -> a b c b c a) {{ deps:dup_abc,bca }} { dup_abc bca }
+define dup_cab : (a b c -> a b c c a b) {{ deps:dup_abc,cab }} { dup_abc cab }
+define dup_cba : (a b c -> a b c c b a) {{ deps:dup_abc,cba }} { dup_abc cba }

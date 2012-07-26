@@ -1,0 +1,14 @@
+// Load all standard definitions into their respective namespaces
+// Be sure the file paths are correct
+
+"CatDefs/standard-core.cat" 'core loadNS
+"CatDefs/standard-shuffle.cat" 'shuffle loadNS
+"CatDefs/extended-shuffling.cat" 'shuffle loadNS
+"CatDefs/standard-combinators.cat" 'combinators loadNS
+"CatDefs/standard-control-flow.cat" 'control loadNS
+"CatDefs/standard-lists.cat" 'lists loadNS
+"CatDefs/standard-math.cat" 'math loadNS
+"CatDefs/standard-predicates.cat" 'predicates loadNS
+"CatDefs/standard-hash.cat" 'hash loadNS
+"CatDefs/standard-vectors.cat" 'vectors loadNS
+"CatDefs/standard-geometry.cat" 'geometry loadNS
