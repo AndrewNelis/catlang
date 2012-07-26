@@ -1,7 +1,11 @@
 from types import BooleanType
+from namespace import Definitions
+
+ns = Definitions('user')
 
 tests = (
     # List of ('input expression', [expected stack])
+    ('clear', []),
     ('123 0b1010 0xff 017 0(3)12 0(11)2a -3.1415', [123, 10, 255, 15, 5, 32, -3.1415]),
     ('clear 3 5 +', [8]),
     ('10 9 -', [8, 1]),
@@ -72,7 +76,7 @@ tests = (
     ('pop 42 [dup inc] [add] compose  "test" !', [42]),
     ('test apply', [85]),
     ('dec', [84]),
-    ('2 div', [42]),
+    ('2 /', [42]),
     ('3 divmod', [14, 0]),
     ('clear nil empty', [[], True]),
     ('drop 1 cons empty', [[1], False]),
@@ -104,7 +108,7 @@ tests = (
     ('drop 2 3 pair', [[2, 3]]),
     ('drop 3 2 popd', [2]),
     ('drop "1,2,3,4" pyList', [[1, 2, 3, 4]]),
-    ('drop 3 [2 mul] 2 repeat', [12]),
+    ('drop 3 [2 *] 2 repeat', [12]),
     ('drop "Hello world?" "world" "Dolly" replace_str', ['Hello Dolly?']),
     ('drop "abcabc" "b" rindex_of', [4]),
     ('drop [1 2 3 4 3 2] list 3 rindex_of', [4]),
@@ -136,7 +140,7 @@ tests = (
     ('clear 42.0 to_int', [42]),
     ('to_bool', [True]),
     ('clear 0 to_bool', [False]),
-    ('clear [1 2 3] list [4 5 6] list [mul] bin_op', [[4, 10, 18]]),
+    ('clear [1 2 3] list [4 5 6] list [*] bin_op', [[4, 10, 18]]),
     ('clear [2 1 -1] list [-3 4 1] list cross_prod', [[5, 1, 11]]),
     ('clear -23 abs -42.12 abs 6 abs', [23, 42.12, 6]),
     ('clear [1 1 true] list all', [True]),
@@ -158,13 +162,17 @@ tests = (
 )
 
 
+@ns.define('runtests')
 def runtests(cat):
-    e = cat.eval
+    """Run a series of tests on the stack.
+
+    """
+    ev = cat.eval
 
     bad = 0
 
     for expression, result in tests:
-        value = e(expression)
+        value = ev(expression)
         if value != result:
             cat.output("Error: '%s' --> expected: %s got: %s" % (
                     expression, str(result), str(value)), 'red')

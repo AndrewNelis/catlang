@@ -8,6 +8,9 @@ from types import (
 
 from catlang import toggle_trace, toggle_pdb
 
+# Our library of python defined words.
+import lib
+
 
 class Functions:
     """Return a function for a given symbol. Also maintains
@@ -24,10 +27,6 @@ class Functions:
         self.userNS = 'user'
         self.NSdict = {'std':
                                     {
-                                    '+'         :'add',
-                                    '-'         :'sub',
-                                    '*'         :'mul',
-                                    '/'         :'div',
                                     '='         :'eq',
                                     '!='        :'neq',
                                     '<'         :'lt',
@@ -94,6 +93,9 @@ class Functions:
                          }
 
         self.NSdict['user'].update(userfunctions)
+
+        lib.load_stdlib(self.NSdict)
+
         self.parseDef = re.compile( r'define\s+(\S+)\s*(:\s*\(.*\))?\s*(\{\{.*\}\})?\s*(\{.*\})', re.DOTALL )
 
     def getFunction( self, what ):
@@ -1137,49 +1139,6 @@ class Functions:
         '''
         a, b = stack.pop2()
         stack.push( b + a )
-
-    def sub( self, stack ) :
-        '''
-        sub : (nbr nbr -> nbr)
-
-        desc:
-            subtracts the number at [0] from that at [-1] returning
-            the difference to the top of the stack.
-
-        tags:
-            level0,mathematics
-        '''
-        a, b = stack.pop2()
-        stack.push( b - a )
-
-    def mul( self, stack ) :
-        '''
-        mul : (nbr nbr -> nbr)
-
-        desc:
-            multiplies together the top two numbers on the stack. Result is placed
-            on top of the stack. Note if the lower "number" is a string or a list
-            it is replicated according to the standard Python rules.
-
-        tags:
-            level0,mathematics
-        '''
-        a, b = stack.pop2()
-        stack.push( b * a )
-
-    def div( self, stack ) :
-        '''
-        div : (nbr nbr -> nbr)
-
-        desc:
-            The number at [0] is divided into the number at [-1] and the
-            quotient is pushed onto the stack.
-
-        tags:
-            level0,mathematics
-        '''
-        a, b = stack.pop2()
-        stack.push( b / a )
 
     def mod( self, stack ):
         '''

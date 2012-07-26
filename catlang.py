@@ -80,7 +80,6 @@ def toggle_pdb():
 
 
 import functions
-import lang_tests
 
 
 class Cat:
@@ -363,6 +362,7 @@ class Cat:
                 defined, func = getFunction( atom )
 
             except Exception, msg:
+                raise
                 raise Exception, "eval: Error fetching %s (%s)" % (atom, msg)
 
             if defined :
@@ -612,9 +612,6 @@ if __name__ == '__main__':
             elif line.lower().startswith("fullerrorinfo"):
                 fullErrorInfo = line.lower().endswith(('on', 'true', 'yes'))
 
-            elif line.lower() == 'runtests':
-                lang_tests.runtests(cat)
-
             else:
                 try:
                     cat.eval(line.strip())
@@ -623,6 +620,7 @@ if __name__ == '__main__':
                         print colored(str(cat), 'blue')
 
                 except Exception, msg:
+                    # For now, I'd rather see exceptions rather than hide them
                     raise
                     print colored(msg, 'red')
 
