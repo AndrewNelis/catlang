@@ -41,27 +41,23 @@
 __version__ = '0.6'
 
 import pdb
-import platform
 import sys
 
 from types import ListType, TupleType
 
-# set up to handle colored text to console
 try:
-    from termcolor import colored
+    from colorama import init, Fore
+    init(autoreset=True)
 
 except ImportError:
-    def colored(text, _):
+    Fore = None  # NOQA
+
+
+def colored(text, color):
+    if Fore:
+        return getattr(Fore, color.upper()) + text
+    else:
         return text
-
-if platform.system().lower() == 'windows':
-    try:
-        import colorama  # pylint: disable=F0401
-        colorama.init()
-
-    except ImportError:
-        pass
-
 
 # debugging switches
 _flags = {
