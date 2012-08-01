@@ -170,7 +170,11 @@ def runtests(cat):
     bad = 0
 
     for expression, result in tests:
-        value = ev(expression)
+        try:
+            value = ev(expression)
+        except Exception:
+            cat.output("Exception evaluating %r" % expression, 'red')
+            raise
         if value != result:
             cat.output("Error: '%s' --> expected: %r got: %r" % (
                     expression, result, value), 'red')

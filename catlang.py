@@ -49,15 +49,14 @@ try:
     from colorama import init, Fore
     init(autoreset=True)
 
-except ImportError:
-    Fore = None  # NOQA
-
-
-def colored(text, color):
-    if Fore:
+    def colored(text, color):
         return getattr(Fore, color.upper()) + text
-    else:
+
+except ImportError:
+
+    def colored(text, _):  # NOQA
         return text
+
 
 # debugging switches
 _flags = {
@@ -108,33 +107,21 @@ class Cat:
 
     def define(self, line):
         """If a line starts with 'define', then it's a function declaration"""
-        match = self.parser.parseDef.match(line)
 
-        if not match:
-            raise Exception('expect functions of the form "define name (: effect)? {{description}}? {definition}"')
+        definition = self.parser.parse_definition(line)
 
-        else:
-            name, effect, desc, definition = match.groups()
-            effect = effect if effect else ' : none'
-            desc = desc.strip("{}") if desc else "  none"
-            doc = "  %s %s\n\n%s" % (name, effect, desc)
+        doc = " %s %s\n\n%s" % (
+                definition.name,
+                definition.effect,
+                definition.description,
+                )
 
-            # look for dependencies (e.g. for word abba we would have deps:abab,aba or just deps:abab as abab has deps:aba)
-            mo = self.parser.findDeps.finditer(desc)
+        for word in definition.dependencies:
+            self.push(word)
+            self.funcs.fetch(self)
 
-            if mo:
-                for dep in mo:
-                    deps = dep.group(1)
-                    words = deps.split(',')
-
-                    for word in words:
-                        if word == '':
-                            continue
-
-                        self.push(word)
-                        self.funcs.fetch(self)
-
-            self.funcs.setFunction(name, list(self.parser.gobble(definition)), doc)
+        self.funcs.setFunction(definition.name,
+                list(self.parser.gobble(definition.definition)), doc)
 
     def eval(self, expression):
         """Evaluate the given expression. This is the workhorse."""
