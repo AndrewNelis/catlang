@@ -1,10 +1,8 @@
 
-from namespace import Definitions
-
-ns = Definitions('user')
+from cat.namespace import define
 
 
-@ns.define('+')
+@define('+')
 def add(cat):
     """
         add : (nbr nbr -> nbr)
@@ -21,7 +19,7 @@ def add(cat):
     return cat.push(a + b)
 
 
-@ns.define('-')
+@define('-')
 def sub(cat):
     """
     sub : (nbr nbr -> nbr)
@@ -37,7 +35,7 @@ def sub(cat):
     cat.push(b - a)
 
 
-@ns.define('*')
+@define('*')
 def mul(cat):
     """
     mul : (nbr nbr -> nbr)
@@ -54,7 +52,7 @@ def mul(cat):
     cat.push(a * b)
 
 
-@ns.define('/')
+@define('/')
 def div(cat):
     """
     div : (nbr nbr -> nbr)

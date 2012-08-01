@@ -1,7 +1,5 @@
 from types import BooleanType
-from namespace import Definitions
-
-ns = Definitions('user')
+from cat.namespace import define
 
 tests = (
     # List of ('input expression', [expected stack])
@@ -162,7 +160,7 @@ tests = (
 )
 
 
-@ns.define('runtests')
+@define('runtests')
 def runtests(cat):
     """Run a series of tests on the stack.
 
@@ -174,8 +172,8 @@ def runtests(cat):
     for expression, result in tests:
         value = ev(expression)
         if value != result:
-            cat.output("Error: '%s' --> expected: %s got: %s" % (
-                    expression, str(result), str(value)), 'red')
+            cat.output("Error: '%s' --> expected: %r got: %r" % (
+                    expression, result, value), 'red')
             bad += 1
 
     if not bad:
