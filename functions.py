@@ -6,10 +6,9 @@ from types import (
         ListType, FileType, BooleanType, FunctionType)
 
 
-from catlang import toggle_trace, toggle_pdb
-
 import defs   # NOQA
 from cat.namespace import NameSpace
+from cat.stack import Stack
 
 
 class Functions:
@@ -28,68 +27,68 @@ class Functions:
         self.NSdict = {'std':
                                     {
                                     '=': 'eq',
-                                    '!='        :'neq',
-                                    '<'         :'lt',
-                                    '>'         :'gt',
-                                    '<='        :'lteq',
-                                    '>='        :'gteq',
-                                    'if'        :'_if',
-                                    '%'         :'mod',
-                                    '%/'        :'_divmod',
-                                    '/%'        :'_divmod',
-                                    '**'        :'pwr',
-                                    '+rot'      :'_rotUp',
-                                    '-rot'      :'_rotDown',
-                                    '++'        :'inc',
-                                    '--'        :'dec',
-                                    '~'         :'_not',
-                                    '!'         :'_saveVar',
-                                    '@'         :'_fetchVar',
-                                    '>>'        :'_rightShift',
-                                    '<<'        :'_leftShift',
-                                    '&'         :'bit_and',
-                                    '|'         :'bit_or',
-                                    '~'         :'bit_not',
-                                    'and'       :'_and',
-                                    'del'       :'_del_word',
-                                    'divmod'    :'_divmod',
-                                    'float'     :'_float',
-                                    'int'       :'_int',
-                                    'list'      :'_list',
-                                    'not'       :'_not',
-                                    'or'        :'_or',
-                                    'str_cat'   :'add',  # Go python!
-                                    'type'      :'typeof',
-                                    'while'     :'_while',
-                                    'cd'        :'focusNS',
-                                    'ls'        :'_udf',
-                                    'rm'        :'_del_word',
-                                    'ln'        :'linkToNS',
-                                    'pwd'       :'showUserNS',
-                                    '#allDefs'  :'_loadAllDefs',
-                                    '#allWords' :'_showAllWords',
-                                    '#def'      :'_dumpdef',
-                                    '#dir'      :'_dir',
-                                    '#doc'      :'_show',
-                                    '#dump'     :'_dumpStack',
-                                    '#import'   :'_import',
-                                    '#info'     :'_info',
-                                    '#instance' :'_instance',
-                                    '#listFiles':'_listDefinitionFiles',
-                                    '#load'     :'_load',
-                                    '#pdb'      :'_pdb',
-                                    '#prompt'   :'_newPrompt',
-                                    '#reload'   :'_reload',
-                                    '#trace'    :'_trace',
-                                    '#types'    :'_type',
-                                    '#udf'      :'_udf',
-                                    '#vars'     :'_showVars',
-                                    '#whereis'  :'_whereis',
-                                    '#words'    :'_words',
+                                    '!=': 'neq',
+                                    '<': 'lt',
+                                    '>': 'gt',
+                                    '<=': 'lteq',
+                                    '>=': 'gteq',
+                                    'if': '_if',
+                                    '%': 'mod',
+                                    '%/': '_divmod',
+                                    '/%': '_divmod',
+                                    '**': 'pwr',
+                                    '+rot': '_rotUp',
+                                    '-rot': '_rotDown',
+                                    '++': 'inc',
+                                    '--': 'dec',
+                                    '~': '_not',
+                                    '!': '_saveVar',
+                                    '@': '_fetchVar',
+                                    '>>': '_rightShift',
+                                    '<<': '_leftShift',
+                                    '&': 'bit_and',
+                                    '|': 'bit_or',
+                                    '~': 'bit_not',
+                                    'and': '_and',
+                                    'del': '_del_word',
+                                    'divmod': '_divmod',
+                                    'float': '_float',
+                                    'int': '_int',
+                                    'list': '_list',
+                                    'not': '_not',
+                                    'or': '_or',
+                                    'str_cat': 'add',  # Go python!
+                                    'type': 'typeof',
+                                    'while': '_while',
+                                    'cd': 'focusNS',
+                                    'ls': '_udf',
+                                    'rm': '_del_word',
+                                    'ln': 'linkToNS',
+                                    'pwd': 'showUserNS',
+                                    '#allDefs': '_loadAllDefs',
+                                    '#allWords': '_showAllWords',
+                                    '#def': '_dumpdef',
+                                    '#dir': '_dir',
+                                    '#doc': '_show',
+                                    '#dump': '_dumpStack',
+                                    '#import': '_import',
+                                    '#info': '_info',
+                                    '#instance': '_instance',
+                                    '#listFiles': '_listDefinitionFiles',
+                                    '#load': '_load',
+                                    '#pdb': '_pdb',
+                                    '#prompt': '_newPrompt',
+                                    '#reload': '_reload',
+                                    '#trace': '_trace',
+                                    '#types': '_type',
+                                    '#udf': '_udf',
+                                    '#vars': '_showVars',
+                                    '#whereis': '_whereis',
+                                    '#words': '_words',
 
-                                    '__globals__' : { 'CatDefs' : 'CatDefs/', 'prompt' : 'Cat> ' },
+                                    '__globals__': {'CatDefs': 'CatDefs/', 'prompt': 'Cat> '},
                                     },
-                           'user' : { '__vars__' : { }, '__links__' : [], '__inst__' : { } },
+                           'user': {'__vars__': {}, '__links__': [], '__inst__': {}},
                          }
 
         self.NSdict['user'].update(userfunctions)
@@ -242,7 +241,7 @@ class Functions:
     # They're prefixed with underscores so people don't unintentionally
     # re-define them and so we can identify these when 'defs' is called
 
-    def _if(self, stack):
+    def _if(self, cat):
         '''
         if : (func:true_func func:false_func bool:condition -> any|none)
 
@@ -252,15 +251,15 @@ class Functions:
         tags:
             level0,control
         '''
-        ffalse, ftrue, truth = stack.popn(3)
+        ffalse, ftrue, truth = cat.stack.pop_n(3)
 
         if truth:
-            stack.push(ftrue)
+            cat.stack.push(ftrue)
 
         else:
-            stack.push(ffalse)
+            cat.stack.push(ffalse)
 
-        self.eval(stack)
+        self.eval(cat)
 
     def _dumpStack(self, stack):
         '''
@@ -296,7 +295,7 @@ class Functions:
                 return
 
             else:
-                raise ValueError, "#doc: No documentation for '%s' in '%s'" % (name, ns)
+                raise ValueError("#doc: No documentation for '%s' in '%s'" % (name, ns))
 
         if name in ['__vars__', '__links__', '__inst__']:
             return
@@ -347,11 +346,11 @@ class Functions:
         fileName = stack.pop()
 
         if type(fileName) != StringType:
-            raise Exception, "#load: File name must be a string"
+            raise Exception("#load: File name must be a string")
 
         if not force:
             if fileName in self.loadList:
-                raise Warning, "#load: The file of Cat definitions called '%s' has already been loaded. Skipping it." % fileName
+                raise Warning("#load: The file of Cat definitions called '%s' has already been loaded. Skipping it." % fileName)
 
         if ns == '':
             ns = self.userNS
@@ -387,7 +386,7 @@ class Functions:
                     mo = self.parseDef.match(buffer)
 
                     if not mo:
-                        raise ValueError, "#load: Bad definition in file %s at line %d" % (fileName, lineNo)
+                        raise ValueError("#load: Bad definition in file %s at line %d" % (fileName, lineNo))
 
                     # create definition
                     descrip = mo.group(3).strip("{}") if mo.group(3) else ''
@@ -446,9 +445,9 @@ class Functions:
             level0,stack
         '''
         if stack.length() < 3:
-            raise Exception, "+rot: Expect at least three elements on the stack"
+            raise Exception("+rot: Expect at least three elements on the stack")
 
-        t, m, b = stack.popn(3)
+        t, m, b = stack.pop_n(3)
         stack.push((t, b, m), multi=True)
 
     def _rotDown(self, stack):
@@ -462,9 +461,9 @@ class Functions:
             level0,stack
         '''
         if stack.length() < 3:
-            raise Exception, "-rot: Expect at least three elements on the stack"
+            raise Exception("-rot: Expect at least three elements on the stack")
 
-        t, m, b = stack.popn(3)
+        t, m, b = stack.pop_n(3)
         stack.push((m, t, b), multi=True)
 
     def _not(self, stack):
@@ -490,12 +489,12 @@ class Functions:
         tags:
             level1,control
         '''
-        b, f = stack.pop2()
+        b, f = stack.pop_2()
 
         while (stack.eval(b), stack.pop())[1]:
             stack.eval(f)
 
-    def _list(self, stack):
+    def _list(self, cat):
         '''
         list : ([...] -> list)
 
@@ -505,13 +504,12 @@ class Functions:
         tags:
             level0,lists
         '''
-        func = stack.pop()
-        old = stack.stack
-        stack.stack = []
-        stack.eval(func)
-        lst = stack.stack
-        stack.stack = old
-        stack.push(lst)
+
+        func = cat.pop()
+        with cat.empty_stack():
+            cat.eval(func)
+            lst = cat.to_list()
+        cat.push(lst)
 
     def _type(self, stack):
         '''
@@ -532,7 +530,7 @@ class Functions:
 
         stack.output(str(typeList), 'green')
 
-    def _int(self, stack):
+    def _int(self, cat):
         '''
         int : (obj -> int)
 
@@ -542,9 +540,9 @@ class Functions:
         tags:
             level1,math,conversion
         '''
-        stack.stack[-1] = int(stack.stack[-1])
+        cat.stack.push(int(cat.stack.pop()))
 
-    def _float(self, stack):
+    def _float(self, cat):
         '''
         float : (obj -> float)
 
@@ -554,9 +552,9 @@ class Functions:
         tags:
             level1,math,conversion
         '''
-        stack.stack[-1] = float(stack.stack[-1])
+        cat.stack.push(float(cat.stack.pop()))
 
-    def _pdb(self, stack):
+    def _pdb(self, cat):
         '''
         #pdb : (-- -> --)
 
@@ -566,7 +564,8 @@ class Functions:
         tags:
             custom,system,debugging
         '''
-        toggle_pdb()
+        cat.toggle_pdb()
+        #toggle_pdb()
 
     def _dumpdef(self, stack):
         '''
@@ -610,7 +609,7 @@ class Functions:
         tags:
             level0,boolean
         '''
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(a and b)
 
     def _or(self, stack):
@@ -623,7 +622,7 @@ class Functions:
         tags:
             level0,boolean
         '''
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(a or b)
 
     def _import(self, stack):
@@ -648,7 +647,7 @@ class Functions:
             sys.modules[what] = __import__(what)
 
         else:
-            raise Exception, "#import The module name must be a string"
+            raise Exception("#import The module name must be a string")
 
     def _instance(self, stack):
         '''
@@ -664,13 +663,13 @@ class Functions:
         tags:
             custom,instance
         '''
-        cls, args, name = stack.popn(3)
+        cls, args, name = stack.pop_n(3)
 
         if type(cls) != StringType:
-            raise ValueError, "#instance: The module.class identifier must be a string"
+            raise ValueError("#instance: The module.class identifier must be a string")
 
         if type(name) != StringType:
-            raise ValueError, "#instance: The instance name must be a string"
+            raise ValueError("#instance: The instance name must be a string")
 
         if type(args) == StringType and args.startswith("["):
             args = eval(args)
@@ -714,11 +713,11 @@ class Functions:
         tags:
             custom,variables,user
         '''
-        varName, value = stack.pop2()
+        varName, value = stack.pop_2()
 
         if self.isFunction(varName):
             stack.push(value)
-            raise ValueError, "!: User variable '%s' duplicates an existing method" % varName
+            raise ValueError("!: User variable '%s' duplicates an existing method" % varName)
 
         self.setVar(varName, value)
 
@@ -740,7 +739,7 @@ class Functions:
             stack.push(val)
 
         else:
-            raise KeyError, "@: No variable called " + name
+            raise KeyError("@: No variable called " + name)
 
     def _showVars(self, stack):
         '''
@@ -857,18 +856,19 @@ class Functions:
         '''
         self._words(stack, True)
 
-    def _trace(self, stack):
+    def _trace(self, cat):
         '''
         #trace: (-- -> --)
 
         desc:
-            toggles the global traceing flag to enable simple tracing of function
+            toggles the global tracing flag to enable simple tracing of function
             execution.
 
         tags:
             custom,debugging
         '''
-        toggle_trace()
+        # This will fail. Needs fixing.
+        cat.toggle_trace()
 
     def _rightShift(self, stack):
         '''
@@ -880,7 +880,7 @@ class Functions:
         tags:
             level0,math
         '''
-        n, val = stack.pop2()
+        n, val = stack.pop_2()
         stack.push(int(val) >> n)
 
     def _leftShift(self, stack):
@@ -893,7 +893,7 @@ class Functions:
         tags:
             level0,math
         """
-        n, val = stack.pop2()
+        n, val = stack.pop_2()
         stack.push(int(val) << n)
 
     def _udf(self, stack):
@@ -930,7 +930,7 @@ class Functions:
             words = top
 
         else:
-            raise ValueError, "del_word: expect a string or list"
+            raise ValueError("del_word: expect a string or list")
 
         for word in words:
             if word in ['__vars__', '__links__', '__inst__']:
@@ -963,7 +963,7 @@ class Functions:
         tags:
             level0,mathematics
         '''
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(divmod(b, a), multi=True)
 
     def _listDefinitionFiles(self, stack):
@@ -982,9 +982,9 @@ class Functions:
         path = stack.pop()
 
         if type(path) != StringType:
-            raise ValueError, "#listFiles: Directory path must be a string"
+            raise ValueError("#listFiles: Directory path must be a string")
 
-        fnmap = { }
+        fnmap = {}
         path += "*.cat"
         regex = re.compile(r'^\s*define\s+(\S+)')
 
@@ -1054,12 +1054,12 @@ class Functions:
             path += "*.cat"
 
             # escape characters in theWord that are interpreted by "re"
-            letters = [ x for x in theWord ]
+            letters = [x for x in theWord]
 
             for i in range(len(letters)):
                 c = letters[i]
 
-                if c in ".[]{}^$*?()+-|" :  # regular expression characters
+                if c in ".[]{}^$*?()+-|":  # regular expression characters
                     letters[i] = "\\" + c
 
             theWord = "".join(letters)
@@ -1100,7 +1100,7 @@ class Functions:
         self.NSdict['std']['__globals__']['prompt'] = str(stack.pop())
 
     # Now begins methods implementing functions with non-conflicting acceptable Python names
-    def inc(self, stack):
+    def inc(self, cat):
         '''
         inc : (nbr -> nbr)
 
@@ -1110,9 +1110,9 @@ class Functions:
         tags:
             level0,mathematics
         '''
-        stack.stack[-1] += 1
+        cat.stack.push(cat.stack.pop() + 1)
 
-    def dec(self, stack):
+    def dec(self, cat):
         '''
         dec : (nbr -> nbr)
 
@@ -1122,7 +1122,7 @@ class Functions:
         tags:
             level0,mathematics
         '''
-        stack.stack[-1] -= 1
+        cat.stack.push(cat.stack.pop() - 1)
 
     def add(self, stack):
         '''
@@ -1136,7 +1136,7 @@ class Functions:
         tags:
             level0,mathematics
         '''
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(b + a)
 
     def mod(self, stack):
@@ -1150,7 +1150,7 @@ class Functions:
         tags:
             level0,mathematics
         '''
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(b % a)
 
     def pwr(self, stack):
@@ -1163,19 +1163,19 @@ class Functions:
         tags:
             level0,math
         '''
-        expt, base = stack.pop2()
+        expt, base = stack.pop_2()
 
         if type(base) == StringType:
             base = eval(base)
 
         if type(base) not in [IntType, LongType, FloatType]:
-            raise ValueError, "pwr: The base must be a number"
+            raise ValueError("pwr: The base must be a number")
 
         if type(expt) == StringType:
             expt = eval(expt)
 
         if type(expt) not in [IntType, LongType, FloatType]:
-            raise ValueError, "pwr: The exponent must be a number"
+            raise ValueError("pwr: The exponent must be a number")
 
         stack.push(base ** expt)
 
@@ -1190,7 +1190,7 @@ class Functions:
         tags:
             level1,mathematics
         '''
-        dp, nbr = stack.pop2()
+        dp, nbr = stack.pop_2()
 
         if type(nbr) != FloatType:
             nbr = float(nbr)
@@ -1218,7 +1218,7 @@ class Functions:
             stack.push(abs(nbr))
 
         else:
-            raise ValueError, "abs: Argument is not a number"
+            raise ValueError("abs: Argument is not a number")
 
     def all(self, stack):
         '''
@@ -1240,7 +1240,7 @@ class Functions:
             stack.push(all(iter))
 
         else:
-            raise ValueError, "all: Argument must be an iterable"
+            raise ValueError("all: Argument must be an iterable")
 
     def any(self, stack):
         '''
@@ -1262,7 +1262,7 @@ class Functions:
             stack.push(any(iter))
 
         else:
-            raise ValueError, "any: Expect an iterable (list) on top of the stack"
+            raise ValueError("any: Expect an iterable (list) on top of the stack")
 
     def chr(self, stack):
         '''
@@ -1286,7 +1286,7 @@ class Functions:
             stack.push(chr(val))
 
         else:
-            raise ValueError, "chr: Cannot convert argument to an integer"
+            raise ValueError("chr: Cannot convert argument to an integer")
 
     def enum(self, stack):
         '''
@@ -1299,21 +1299,21 @@ class Functions:
         tags:
             custom,lists
         '''
-        start, lst = stack.pop2()
+        start, lst = stack.pop_2()
 
         if type(start) in [StringType, FloatType]:
             start = int(start)
 
         if type(start) not in [IntType, LongType]:
-            raise ValueError, "enum: Starting value must be an integer"
+            raise ValueError("enum: Starting value must be an integer")
 
         if type(lst) == StringType:
             lst = eval(lst)
 
         if type(lst) not in [ListType, TupleType]:
-            raise ValueError, "enum: The list must be an iterable or convertable to one"
+            raise ValueError("enum: The list must be an iterable or convertable to one")
 
-        stack.push([ [x,y] for x,y in enumerate(lst, start)])
+        stack.push([[x, y] for x, y in enumerate(lst, start)])
 
     def hash(self, stack):
         '''
@@ -1386,7 +1386,7 @@ class Functions:
         tags:
             custom,lists
         '''
-        r, l = stack.pop2()
+        r, l = stack.pop_2()
         stack.push([list(x) for x in zip(l, r)])
 
     def unzip(self, stack):
@@ -1417,10 +1417,10 @@ class Functions:
         tags:
             custom,strings
         '''
-        splitter, target = stack.pop2()
+        splitter, target = stack.pop_2()
 
         if type(target) != StringType or type(splitter) != StringType:
-            raise ValueError, "split: Both arguments must be strings"
+            raise ValueError("split: Both arguments must be strings")
 
         if len(splitter) == 0:
             stack.push([x for x in target])
@@ -1439,7 +1439,7 @@ class Functions:
         tags:
             custom,strings,lists
         '''
-        conn, lst = stack.pop2()
+        conn, lst = stack.pop_2()
 
         if type(conn) != StringType:
             conn = str(conn)
@@ -1462,10 +1462,10 @@ class Functions:
         tags:
             custom,strings
         '''
-        test, target = stack.pop2()
+        test, target = stack.pop_2()
 
         if type(test) != StringType or type(target) != StringType:
-            raise ValueError, "count_str: Both target and test objects must be strings"
+            raise ValueError("count_str: Both target and test objects must be strings")
 
         stack.push(target)
         stack.push(target.count(test))
@@ -1480,7 +1480,7 @@ class Functions:
         tags:
             level1,comparison"
         """
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(a == b)
 
     def neq(self, stack):
@@ -1493,7 +1493,7 @@ class Functions:
         tags:
             level1,comparison"
         """
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(a != b)
 
     def gt(self, stack):
@@ -1507,7 +1507,7 @@ class Functions:
         tags:
             level1,comparison"
         """
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(b > a)
 
     def lt(self, stack):
@@ -1521,7 +1521,7 @@ class Functions:
         tags:
             level1,comparison"
         """
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(b < a)
 
     def gteq(self, stack):
@@ -1535,7 +1535,7 @@ class Functions:
         tags:
             level1,comparison"
         """
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(b >= a)
 
     def lteq(self, stack):
@@ -1549,10 +1549,10 @@ class Functions:
         tags:
             level1,comparison"
         """
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push(b <= a)
 
-    def clear(self, stack):
+    def clear(self, cat):
         '''
         clear : (A -> -)
 
@@ -1562,7 +1562,7 @@ class Functions:
         tags:
             level0,stack
         '''
-        stack.clear()
+        cat.stack.clear()
 
     def pop(self, stack):
         '''
@@ -1599,7 +1599,7 @@ class Functions:
         tags:
             level0,stack"
         '''
-        t, n = stack.pop2()
+        t, n = stack.pop_2()
         stack.push([n, t])
 
     def drop(self, stack):
@@ -1636,7 +1636,7 @@ class Functions:
         tags:
             level0,stack"
         '''
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push((a, b), multi=True)
 
     def swapd(self, stack):
@@ -1649,7 +1649,7 @@ class Functions:
         tags:
             level0,stack"
         '''
-        a, b, c = stack.popn(3)
+        a, b, c = stack.pop_n(3)
         stack.push((b, c, a), multi=True)
 
     def dupd(self, stack):
@@ -1662,10 +1662,10 @@ class Functions:
         tags:
             level0,stack"
         '''
-        a, b = stack.pop2()
+        a, b = stack.pop_2()
         stack.push((b, b, a), multi=True)
 
-    def eval(self, stack):
+    def eval(self, cat):
         '''
         eval : (func -> (func(A) -> B))
 
@@ -1675,7 +1675,7 @@ class Functions:
         tags:
             level0,functions"
         '''
-        stack.eval(stack.pop())
+        cat.eval(cat.pop())
 
     def apply(self, stack):
         '''
@@ -1798,7 +1798,7 @@ class Functions:
             val.reverse()
             stack.push(val)
 
-    def map(self, stack):
+    def map(self, cat):
         '''
         map : (list func -> list)
 
@@ -1808,19 +1808,19 @@ class Functions:
         tags:
             level0,lists
         '''
-        func, elements = stack.pop2()
+        func, elements = cat.pop_2()
         # Evaluate the function with each of the elements.
         results = []
-        oldStack = [] + stack.stack     # this copies the stack
+        old_stack = cat.stack     # this copies the stack
 
         # Push the value onto the stack and evaluate the function.
         for element in elements:
-            stack.stack = [ element ]    # Create a new working stack
-            stack.eval(func)
-            results.extend(stack.popall())
+            cat.stack = Stack([element])    # Create a new working stack
+            cat.eval(func)
+            results.extend(cat.stack.to_list())
 
-        stack.stack = oldStack
-        stack.push(results)
+        cat.stack = old_stack
+        cat.push(results)
 
     def even(self, stack):
         '''
@@ -1835,7 +1835,7 @@ class Functions:
         '''
         stack.push((stack.pop() % 2) == 0)
 
-    def filter(self, stack):
+    def filter(self, cat):
         '''
         filter : ([...] func -> [...])
 
@@ -1849,22 +1849,22 @@ class Functions:
         tags:
             level0,lists,functions,map
         '''
-        func, elements = stack.pop2()
+        func, elements = cat.stack.pop_2()
         results = []
-        oldStack = [] + stack.stack
-        stack.stack = []
+        old_stack = cat.stack
+        cat.stack = Stack()
 
         for element in elements:
-            stack.push(element)
-            stack.eval(func)
+            cat.stack.push(element)
+            cat.eval(func)
 
-            if stack.pop():
+            if cat.stack.pop():
                 results.append(element)
 
-        stack.stack = oldStack
-        stack.push(results)
+        cat.stack = old_stack
+        cat.stack.push(results)
 
-    def fold(self, stack):
+    def fold(self, cat):
         '''
         fold : ('A list any:init func -> 'A any)
 
@@ -1887,19 +1887,18 @@ class Functions:
             level0,lists
 
         '''
-        f, init, a = stack.popn(3)
-#        a.reverse()
-        oldStack = [] + stack.stack
-        stack.stack = []
+        f, init, a = cat.pop_n(3)
+        old_stack = cat.stack
+        stack = cat.stack = Stack()
 
         for x in a:
             stack.push(init)
             stack.push(x)
-            stack.eval(f)
+            cat.eval(f)
             init = stack.pop()
 
-        stack.stack = oldStack
-        stack.push(init)
+        cat.stack = old_stack
+        cat.stack.push(init)
 
     def foreach(self, stack):
         '''
@@ -1919,8 +1918,7 @@ class Functions:
         tags:
             level2,control,iteration
         '''
-        f, a = stack.pop2()
-#        a.reverse()
+        f, a = stack.pop_2()
 
         for x in a:
             stack.push(x)
@@ -1939,7 +1937,7 @@ class Functions:
         tags:
             level0,functions
         '''
-        func, second = stack.pop2()
+        func, second = stack.pop_2()
         stack.push(func)
         self.eval(stack)
         stack.push(second)
@@ -1983,7 +1981,7 @@ class Functions:
 
         else:
             stack.push(x)
-            raise ValueError, "uncons: Argument on top of stack must be a list"
+            raise ValueError("uncons: Argument on top of stack must be a list")
 
     def size(self, stack):
         '''
@@ -2008,13 +2006,13 @@ class Functions:
         tags:
             level0,lists
         '''
-        r, l = stack.pop2()
+        r, l = stack.pop_2()
 
         if type(r) not in [ListType, TupleType]:
-            r = [ r ]
+            r = [r]
 
         if type(l) not in [ListType, TupleType]:
-            l = [ l ]
+            l = [l]
 
         stack.push(l + r)
 
@@ -2042,7 +2040,7 @@ class Functions:
         tags:
             level1,lists
         '''
-        ix, val = stack.pop2()
+        ix, val = stack.pop_2()
         lst = stack.peek()
         lst[int(ix)] = val
 
@@ -2076,9 +2074,9 @@ class Functions:
         tags:
             level1,lists,strings
         '''
-        end, start = stack.pop2()
+        end, start = stack.pop_2()
         lst = stack.peek()
-        stack.push(lst[int(start) : int(end)])
+        stack.push(lst[int(start): int(end)])
 
     def true(self, stack):
         '''
@@ -2138,7 +2136,7 @@ class Functions:
             level0,functions"
         '''
         t = stack.pop()
-        stack.push(lambda : stack.push(t))
+        stack.push(lambda: stack.push(t))
 
     def compose(self, stack):
         '''
@@ -2150,8 +2148,8 @@ class Functions:
         tags:
             level0,functions"
         '''
-        f1, f2 = stack.pop2()
-        stack.push(lambda : stack.eval2(f2, f1))
+        f1, f2 = stack.pop_2()
+        stack.push(lambda: stack.eval2(f2, f1))
 
     def empty(self, stack):
         '''
@@ -2210,7 +2208,7 @@ class Functions:
         tags:
             level1,control
         '''
-        n, f = stack.pop2()
+        n, f = stack.pop_2()
         n = abs(int(n))
 
         while n > 0:
@@ -2269,7 +2267,7 @@ class Functions:
         tags:
             level1,console
         '''
-        color, text = stack.pop2()
+        color, text = stack.pop_2()
 
         if color == '':
             color = 'black'
@@ -2287,7 +2285,7 @@ class Functions:
         tags:
             level1,console
         '''
-        color, text = stack.pop2()
+        color, text = stack.pop_2()
 
         if color == '':
             color = 'black'
@@ -2317,7 +2315,7 @@ class Functions:
 
         else:
             stack.push(arg)
-            raise Exception, "neg: Cannot negate %s" % str(arg)
+            raise Exception("neg: Cannot negate %s" % str(arg))
 
     def papply(self, stack):
         '''
@@ -2360,7 +2358,7 @@ class Functions:
         tags:
             level1,string,format,conversion
         '''
-        fmt, vals = stack.pop2()
+        fmt, vals = stack.pop_2()
         stack.push(fmt % tuple(vals))
 
     def hex_str(self, stack):
@@ -2412,7 +2410,7 @@ class Functions:
                 self.eval(f)
                 return
 
-        raise Exception, "dispatch1: Could not dispatch function"
+        raise Exception("dispatch1: Could not dispatch function")
 
     def dispatch2(self, stack):
         '''
@@ -2430,14 +2428,14 @@ class Functions:
         obj = stack.pop()
 
         for i in range(len(lst) / 2):
-            f= lst[2 * i + 1]
+            f = lst[2 * i + 1]
             t = lst[2 * i]
 
             if t == obj:
                 self.eval(f)
                 return
 
-        raise Exception, "dispatch2: Could not dispatch function"
+        raise Exception("dispatch2: Could not dispatch function")
 
     def explode(self, stack):
         '''
@@ -2455,7 +2453,7 @@ class Functions:
             stack.push(func)
 
         else:
-            raise ValueError, "explode: Undefined function"
+            raise ValueError("explode: Undefined function")
 
     def throw(self, stack):
         '''
@@ -2467,7 +2465,7 @@ class Functions:
         tags:
             level2,control
         '''
-        raise Exception, "throw: " + str(stack.pop())
+        raise Exception("throw: " + str(stack.pop()))
 
     def try_catch(self, stack):
         '''
@@ -2479,7 +2477,7 @@ class Functions:
         tags:
             level2,control
         '''
-        c, t = stack.pop2()
+        c, t = stack.pop_2()
         old = [] + stack.stack
 
         try:
@@ -2638,7 +2636,7 @@ class Functions:
         tags:
             level2,datetime
         '''
-        r, l = stack.pop2()
+        r, l = stack.pop_2()
         stack.push(l - r)
 
     def add_time(self, stack):
@@ -2651,7 +2649,7 @@ class Functions:
         tags:
             level2,datetime
         '''
-        r, l = stack.pop2()
+        r, l = stack.pop_2()
         stack.push(l + r)
 
     def to_msec(self, stack):
@@ -2715,7 +2713,7 @@ class Functions:
             names = top
 
         else:
-            raise ValueError, "del_var: The variable to be deleted must have a string name or be a list of strings"
+            raise ValueError("del_var: The variable to be deleted must have a string name or be a list of strings")
 
         for name in names:
             if name in self.NSdict[self.userNS]['__vars__']:
@@ -2734,7 +2732,7 @@ class Functions:
         tags:
             level2,math,string,list
         '''
-        t, u = stack.pop2()
+        t, u = stack.pop_2()
         stack.push(min(t, u))
 
     def max(self, stack):
@@ -2750,7 +2748,7 @@ class Functions:
         tags:
             level2,math,string,list
         '''
-        t, u = stack.pop2()
+        t, u = stack.pop_2()
         stack.push(max(t, u))
 
     def new_str(self, stack):
@@ -2763,7 +2761,7 @@ class Functions:
         tags:
             level2,string
         '''
-        n, c = stack.pop2()
+        n, c = stack.pop_2()
         s = eval("'%s' * %d" % (c, n))
         stack.push(s)
 
@@ -2778,7 +2776,7 @@ class Functions:
         tags:
             level2,string
         '''
-        tst, tgt = stack.pop2()
+        tst, tgt = stack.pop_2()
 
         if type(tgt) in [ListType, TupleType]:
             stack.push(tgt.index(tst))
@@ -2797,7 +2795,7 @@ class Functions:
         tags:
             level2,string
         '''
-        tst, tgt = stack.pop2()
+        tst, tgt = stack.pop_2()
 
         if type(tgt) in [ListType, TupleType]:
             n = len(tgt)
@@ -2823,10 +2821,10 @@ class Functions:
         tags:
             level2,string
         '''
-        rpl, tst, tgt = stack.popn(3)
+        rpl, tst, tgt = stack.pop_n(3)
 
         if type(rpl) != StringType or type(tst) != StringType or type(tgt) != StringType:
-            raise ValueError, "replace_str: All three arguments must be strings"
+            raise ValueError("replace_str: All three arguments must be strings")
 
         stack.push(tgt.replace(tst, rpl))
 
@@ -2879,7 +2877,7 @@ class Functions:
             stack.push(dict(top))
 
         else:
-            raise ValueError, "list_to_hash: Expect a list on top of the stack"
+            raise ValueError("list_to_hash: Expect a list on top of the stack")
 
     def pyList(self, stack):
         '''
@@ -2943,7 +2941,7 @@ class Functions:
             stack.push(open(fName, 'r'))
 
         else:
-            raise ValueError, "file_reader: File name must be a string"
+            raise ValueError("file_reader: File name must be a string")
 
     def file_writer(self, stack):
         '''
@@ -2961,7 +2959,7 @@ class Functions:
             stack.push(open(fName, 'w'))
 
         else:
-            raise ValueError, "file_writer: File name must be a string"
+            raise ValueError("file_writer: File name must be a string")
 
     def file_exists(self, stack):
         '''
@@ -2981,7 +2979,7 @@ class Functions:
             stack.push(path.exists(name))
 
         else:
-            raise ValueError, "file_exists: File name must be a string"
+            raise ValueError("file_exists: File name must be a string")
 
     def temp_file(self, stack):
         '''
@@ -3041,7 +3039,7 @@ class Functions:
 
         if type(fd) != FileType:
             stack.push(fd)
-            raise ValueError, "close_stream: Expect a file descriptor on top of stack"
+            raise ValueError("close_stream: Expect a file descriptor on top of stack")
 
         fd.flush()
         fd.close()
@@ -3077,7 +3075,7 @@ class Functions:
             stack.push(dict[key])
 
         else:
-            raise KeyError, "hash_get: No hash list entry for key " + str(key)
+            raise KeyError("hash_get: No hash list entry for key " + str(key))
 
     def hash_set(self, stack):
         '''
@@ -3089,7 +3087,7 @@ class Functions:
         tags:
             level2,hash
         '''
-        key, val = stack.pop2()
+        key, val = stack.pop_2()
         dict = stack.peek()
         dict[key] = val
 
@@ -3104,7 +3102,7 @@ class Functions:
         tags:
             level2,hash
         '''
-        key, val = stack.pop2()
+        key, val = stack.pop_2()
         dict = stack.peek()
 
         if key not in dict:
@@ -3112,7 +3110,7 @@ class Functions:
 
         else:
             stack.push((key, val), multi=True)
-            raise Warning, "hash_add: Key already present in hash list. Use 'hash_set' to replace"
+            raise Warning("hash_add: Key already present in hash list. Use 'hash_set' to replace")
 
     def hash_contains(self, stack):
         '''
@@ -3308,12 +3306,12 @@ class Functions:
                 path += "*.cat"
 
                 # escape characters in theWord that are interpreted by "re"
-                letters = [ x for x in word ]
+                letters = [x for x in word]
 
                 for i in range(len(letters)):
                     c = letters[i]
 
-                    if c in ".[]{}^$*?()+-|" :  # regular expression characters
+                    if c in ".[]{}^$*?()+-|":  # regular expression characters
                         letters[i] = "\\" + c
 
                 theWord = "".join(letters)
@@ -3359,7 +3357,7 @@ class Functions:
                     stack.define(expression)
 
                 else:
-                    raise ValueError, "fetch: No definition can be found for " + word
+                    raise ValueError("fetch: No definition can be found for " + word)
 
     def bin_str(self, stack):
         """
@@ -3398,7 +3396,7 @@ class Functions:
         tags:
             custom,math
         '''
-        r, l = stack.pop2()
+        r, l = stack.pop_2()
         stack.push(int(l) & int(r))
 
     def bit_or(self, stack):
@@ -3412,7 +3410,7 @@ class Functions:
         tags:
             custom,math
         '''
-        r, l = stack.pop2()
+        r, l = stack.pop_2()
         stack.push(int(l) | int(r))
 
     def bit_not(self, stack):
@@ -3437,7 +3435,7 @@ class Functions:
 
         n = int(stack.pop())
         length = bitLen(n)
-        value = ~n & (2**length - 1)
+        value = ~n & (2 ** length - 1)
         stack.push(value)
 
     def cross_prod(self, stack):
@@ -3450,14 +3448,14 @@ class Functions:
         tags:
             level1,vectors
         '''
-        r, l = stack.pop2()
+        r, l = stack.pop_2()
 
         if len(l) != len(r) or len(l) > 3 or len(r) > 3:
-            raise ValueError, "cross_prod: Both vectors must each be of length 3"
+            raise ValueError("cross_prod: Both vectors must each be of length 3")
 
         a1, a2, a3 = l
         b1, b2, b3 = r
-        c = [ a2 * b3 - b2 * a3, a3 * b1 - b3 * a1, a1 * b2 - b1 * a2 ]
+        c = [a2 * b3 - b2 * a3, a3 * b1 - b3 * a1, a1 * b2 - b1 * a2]
         stack.push(c)
 
     def powers(self, stack):
@@ -3471,15 +3469,15 @@ class Functions:
         tags:
             custom,math,polynomials
         '''
-        n, x = stack.pop2()
+        n, x = stack.pop_2()
 
         if type(n) not in [IntType, LongType]:
-            raise ValueError, "powers: Exponent must be an integer"
+            raise ValueError("powers: Exponent must be an integer")
 
         if type(x) not in [IntType, LongType, FloatType]:
-            raise ValueError, "powers: Base must be a number"
+            raise ValueError("powers: Base must be a number")
 
-        l = [x**i for i in range(n + 1)]
+        l = [x ** i for i in range(n + 1)]
         l.reverse()
         stack.push(l)
 
@@ -3497,7 +3495,7 @@ class Functions:
         tags:
             math,polynomials
         '''
-        x, a = stack.pop2()
+        x, a = stack.pop_2()
 
         n = len(a) - 1
         p = a[n]
@@ -3507,7 +3505,7 @@ class Functions:
 
         return p
 
-    def bin_op(self, stack):
+    def bin_op(self, cat):
         '''
         bin_op : (list:any list:any func -> list:any)
 
@@ -3520,30 +3518,25 @@ class Functions:
         tags:
             custom,lists,math
         '''
-        f, r, l = stack.popn(3)
-        original_stack = [] + stack.stack
-        stack.stack = []
-
+        f, r, l = cat.pop_n(3)
         if len(l) != len(r):
-            stack.stack = original_stack
-            raise ValueError, "bin_op: Lists must be of the same length"
+            raise ValueError("bin_op: Lists must be of the same length")
 
         result = []
-        n = len(r)
 
-        for i in range(n):
-            stack.push(l[i])
-            stack.push(r[i])
-            stack.eval(f)
+        with cat.empty_stack():
 
-            if stack.length > 0:
-                result.append(stack.pop())
+            for li, ri in zip(l, r):
+                cat.push(li)
+                cat.push(ri)
+                cat.eval(f)
 
-            else:
-                result.append(None)
+                if cat.length() > 0:
+                    result.append(cat.pop())
+                else:
+                    result.append(None)
 
-        stack.stack = original_stack
-        stack.push(result)
+        cat.push(result)
 
     def getWords(self, stack):
         '''
@@ -3564,7 +3557,7 @@ class Functions:
             stack.push([])
 
         else:
-            stack.push (keys)
+            stack.push(keys)
 
     def help(self, stack):
         '''
@@ -3581,8 +3574,8 @@ class Functions:
         '''
         name = stack.pop()
 
-        if type(name) != StringType:
-            raise ValueError, "help: Expect a string on the stack"
+        if not isinstance(name, basestring):
+            raise ValueError("help: Expect a string on the stack")
 
         # check for user-specified namespace and word
         if name.count(":") == 1:
@@ -3595,7 +3588,7 @@ class Functions:
                 return
 
             else:
-                raise ValueError, "help: No help available for '%s' in '%s'" % (name, ns)
+                raise ValueError("help: No help available for '%s' in '%s'" % (name, ns))
 
         # check for built-in or user-defined
         if name in self.NSdict['std']:

@@ -169,15 +169,16 @@ def runtests(cat):
 
     bad = 0
 
-    for expression, result in tests:
+    for expression, expected_result in tests:
         try:
-            value = ev(expression)
+            result = ev(expression)
         except Exception:
             cat.output("Exception evaluating %r" % expression, 'red')
             raise
-        if value != result:
+
+        if result.to_list() != expected_result:
             cat.output("Error: '%s' --> expected: %r got: %r" % (
-                    expression, result, value), 'red')
+                    expression, expected_result, result.to_list()), 'red')
             bad += 1
 
     if not bad:

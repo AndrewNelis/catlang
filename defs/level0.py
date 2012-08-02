@@ -15,7 +15,7 @@ def add(cat):
         tags:
             level0,mathematics
     """
-    a, b = cat.pop2()
+    a, b = cat.pop_2()
     return cat.push(a + b)
 
 
@@ -31,7 +31,7 @@ def sub(cat):
     tags:
         level0,mathematics
     """
-    a, b = cat.pop2()
+    a, b = cat.pop_2()
     cat.push(b - a)
 
 
@@ -48,7 +48,7 @@ def mul(cat):
     tags:
         level0,mathematics
     """
-    a, b = cat.pop2()
+    a, b = cat.pop_2()
     cat.push(a * b)
 
 
@@ -64,5 +64,5 @@ def div(cat):
     tags:
         level0,mathematics
     """
-    a, b = cat.pop2()
+    a, b = cat.pop_2()
     cat.push(b / a)

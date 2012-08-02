@@ -11,7 +11,7 @@ import re
 Definition = namedtuple('Definition', ['name', 'effect', 'description', 'definition', 'dependencies'])
 
 
-class CatParser:
+class Parser:
 
     def __init__(self):
         self.parseInt = re.compile(r'^0\((?P<base>\d+)\)(?P<value>.*)$')
@@ -36,7 +36,7 @@ class CatParser:
         :type close: string
         :rtype: string
 
-        >>> p = CatParser()
+        >>> p = Parser()
         >>> p.collect_function('[1 2 3] a b c')
         ('[1 2 3]', ' a b c')
 
@@ -77,7 +77,7 @@ class CatParser:
             0bdddd -- binary integer
             0(z)xxxx -- integer to base z (for bases > 10, digits following 9 are a,b,c,d,...,y,z)
 
-            >>> p = CatParser()
+            >>> p = Parser()
             >>> p.intern('12')
             12
             >>> p.intern('0x11')
@@ -168,7 +168,7 @@ class CatParser:
             First char in <line> is assumed to be the opener and doesn't count
             as an ending
 
-            >>> p = CatParser()
+            >>> p = Parser()
             >>> p._consume_to('"test" something else', '"', True)
             ('"test"', ' something else')
             >>> p._consume_to("'constant 1 2 3", ' ', False)
@@ -191,7 +191,7 @@ class CatParser:
         """Return the given expression a token at a time allowing for string
         quoting and anonymous functions
 
-        >>> p = CatParser()
+        >>> p = Parser()
         >>> list(p.gobble('test'))
         ['test']
         >>> list(p.gobble('1 2 3'))
@@ -245,7 +245,7 @@ class CatParser:
 
             Return a Definition namedtuple object.
 
-            >>> p = CatParser()
+            >>> p = Parser()
             >>> d = p.parse_definition('define test { 1 2 + }')
             >>> d.name
             'test'
