@@ -222,7 +222,7 @@ class CatEval:
         return str(self.stack)
 
     @contextmanager
-    def empty_stack(self):
+    def new_stack(self, content=None):
         """
             >>> e = CatEval(initial_stack=[1,2,3])
             >>> print e
@@ -234,7 +234,7 @@ class CatEval:
             ===> 1 2 3
         """
         old_stack = self.stack
-        self.stack = Stack()
+        self.stack = Stack(initial=content)
         try:
             yield
         finally:

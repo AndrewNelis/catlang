@@ -8,7 +8,6 @@ from types import (
 
 import defs   # NOQA
 from cat.namespace import NameSpace
-from cat.stack import Stack
 
 
 class Functions:
@@ -506,7 +505,7 @@ class Functions:
         '''
 
         func = cat.pop()
-        with cat.empty_stack():
+        with cat.new_stack():
             cat.eval(func)
             lst = cat.to_list()
         cat.push(lst)
@@ -1811,15 +1810,13 @@ class Functions:
         func, elements = cat.pop_2()
         # Evaluate the function with each of the elements.
         results = []
-        old_stack = cat.stack     # this copies the stack
 
         # Push the value onto the stack and evaluate the function.
         for element in elements:
-            cat.stack = Stack([element])    # Create a new working stack
-            cat.eval(func)
-            results.extend(cat.stack.to_list())
+            with cat.new_stack([element]):
+                cat.eval(func)
+                results.extend(cat.stack.to_list())
 
-        cat.stack = old_stack
         cat.push(results)
 
     def even(self, stack):
@@ -1851,17 +1848,15 @@ class Functions:
         '''
         func, elements = cat.stack.pop_2()
         results = []
-        old_stack = cat.stack
-        cat.stack = Stack()
 
-        for element in elements:
-            cat.stack.push(element)
-            cat.eval(func)
+        with cat.new_stack():
+            for element in elements:
+                cat.stack.push(element)
+                cat.eval(func)
 
-            if cat.stack.pop():
-                results.append(element)
+                if cat.stack.pop():
+                    results.append(element)
 
-        cat.stack = old_stack
         cat.stack.push(results)
 
     def fold(self, cat):
@@ -1888,17 +1883,15 @@ class Functions:
 
         '''
         f, init, a = cat.pop_n(3)
-        old_stack = cat.stack
-        stack = cat.stack = Stack()
 
-        for x in a:
-            stack.push(init)
-            stack.push(x)
-            cat.eval(f)
-            init = stack.pop()
+        with cat.new_stack():
+            for x in a:
+                cat.push(init)
+                cat.push(x)
+                cat.eval(f)
+                init = cat.pop()
 
-        cat.stack = old_stack
-        cat.stack.push(init)
+        cat.push(init)
 
     def foreach(self, stack):
         '''
@@ -3524,7 +3517,7 @@ class Functions:
 
         result = []
 
-        with cat.empty_stack():
+        with cat.new_stack():
 
             for li, ri in zip(l, r):
                 cat.push(li)
