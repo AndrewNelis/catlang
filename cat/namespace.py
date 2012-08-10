@@ -5,6 +5,8 @@ class _NameSpace:
         self._ns = {}
 
     def set(self, word, value):
+        if word in self._ns:
+            print 'warn: redefinition of', word, 'from', value
         self._ns[word] = value
 
     def get(self, word):

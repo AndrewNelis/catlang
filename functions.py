@@ -32,33 +32,14 @@ class Functions:
                                     '<=': 'lteq',
                                     '>=': 'gteq',
                                     'if': '_if',
-                                    '%': 'mod',
-                                    '%/': '_divmod',
-                                    '/%': '_divmod',
-                                    '**': 'pwr',
-                                    '+rot': '_rotUp',
-                                    '-rot': '_rotDown',
-                                    '++': 'inc',
-                                    '--': 'dec',
                                     '~': '_not',
                                     '!': '_saveVar',
                                     '@': '_fetchVar',
-                                    '>>': '_rightShift',
-                                    '<<': '_leftShift',
                                     '&': 'bit_and',
                                     '|': 'bit_or',
                                     '~': 'bit_not',
-                                    'and': '_and',
                                     'del': '_del_word',
-                                    'divmod': '_divmod',
-                                    'float': '_float',
-                                    'int': '_int',
-                                    'list': '_list',
-                                    'not': '_not',
-                                    'or': '_or',
-                                    'str_cat': 'add',  # Go python!
                                     'type': 'typeof',
-                                    'while': '_while',
                                     'cd': 'focusNS',
                                     'ls': '_udf',
                                     'rm': '_del_word',
@@ -70,16 +51,12 @@ class Functions:
                                     '#dir': '_dir',
                                     '#doc': '_show',
                                     '#dump': '_dumpStack',
-                                    '#import': '_import',
-                                    '#info': '_info',
                                     '#instance': '_instance',
+                                    '#info': '_info',
                                     '#listFiles': '_listDefinitionFiles',
                                     '#load': '_load',
-                                    '#pdb': '_pdb',
                                     '#prompt': '_newPrompt',
                                     '#reload': '_reload',
-                                    '#trace': '_trace',
-                                    '#types': '_type',
                                     '#udf': '_udf',
                                     '#vars': '_showVars',
                                     '#whereis': '_whereis',
@@ -94,6 +71,19 @@ class Functions:
         self.NSdict['user'].update(NameSpace.as_dict())
 
         self.parseDef = re.compile(r'define\s+(\S+)\s*(:\s*\(.*\))?\s*(\{\{.*\}\})?\s*(\{.*\})', re.DOTALL)
+
+        self._checkAliases()
+
+    def _checkAliases(self):
+        """
+            Moving functions off this object using the @define decorator.
+
+            Want to make sure we haven't moved anything off this object without
+            declaring it elsewhere / etc.
+        """
+        for field, alias in self.NSdict['std'].items():
+            if isinstance(alias, str) and not alias.endswith('NS'):
+                assert hasattr(self, alias), '%s expects %s on self' % (field, alias)
 
     def getFunction(self, what):
         """Called by the interpreter to get a function named <what>.
@@ -433,139 +423,6 @@ class Functions:
         stack.push(loadFile)
         self._load(stack)
 
-    def _rotUp(self, stack):
-        '''
-        +rot : (any:a any:b any:c -> any:c any:a any:b)
-
-        desc:
-            rotates the top three elements upward one position circularly
-
-        tags:
-            level0,stack
-        '''
-        if stack.length() < 3:
-            raise Exception("+rot: Expect at least three elements on the stack")
-
-        t, m, b = stack.pop_n(3)
-        stack.push((t, b, m), multi=True)
-
-    def _rotDown(self, stack):
-        '''
-        -rot : (any:a any:b any:c -> any:b any:c any:a)
-
-        desc:
-            rotates the top three elements downward one position circularly
-
-        tags:
-            level0,stack
-        '''
-        if stack.length() < 3:
-            raise Exception("-rot: Expect at least three elements on the stack")
-
-        t, m, b = stack.pop_n(3)
-        stack.push((m, t, b), multi=True)
-
-    def _not(self, stack):
-        '''
-        not : (bool -> bool)
-
-        desc:
-            returns True if the top value on the stack is False and vice versa
-
-        tags:
-            level0,boolean
-        '''
-        stack.stack[-1] = not stack.stack[-1]
-
-    def _while(self, stack):
-        '''
-        while : (func func:test -> any|none)
-
-        desc:
-            executes a block of code (function) repeatedly until the condition returns false
-            Example: func test while
-
-        tags:
-            level1,control
-        '''
-        b, f = stack.pop_2()
-
-        while (stack.eval(b), stack.pop())[1]:
-            stack.eval(f)
-
-    def _list(self, cat):
-        '''
-        list : ([...] -> list)
-
-        desc:
-            creates a list from a function
-
-        tags:
-            level0,lists
-        '''
-
-        func = cat.pop()
-        with cat.new_stack():
-            cat.eval(func)
-            lst = cat.to_list()
-        cat.push(lst)
-
-    def _type(self, stack):
-        '''
-        #types : (-> list)
-
-        desc:
-            prints a list of types represented by elements on the stack
-            in the same order as the element on the stack with the deepest
-            item first and the top item last
-
-        tags:
-            custom,types,stack
-        '''
-        typeList = []
-
-        for item in stack.stack:
-            typeList.append(type(item))
-
-        stack.output(str(typeList), 'green')
-
-    def _int(self, cat):
-        '''
-        int : (obj -> int)
-
-        desc:
-            casts the object on top of the stack to an integer
-
-        tags:
-            level1,math,conversion
-        '''
-        cat.stack.push(int(cat.stack.pop()))
-
-    def _float(self, cat):
-        '''
-        float : (obj -> float)
-
-        desc:
-            casts the object on top of the stack to as floating point number
-
-        tags:
-            level1,math,conversion
-        '''
-        cat.stack.push(float(cat.stack.pop()))
-
-    def _pdb(self, cat):
-        '''
-        #pdb : (-- -> --)
-
-        desc:
-            turns on the pdb flag in the REPL
-
-        tags:
-            custom,system,debugging
-        '''
-        cat.toggle_pdb()
-        #toggle_pdb()
-
     def _dumpdef(self, stack):
         '''
         #def : (string:name -> --)
@@ -597,56 +454,6 @@ class Functions:
 
             else:
                 stack.output("Function %s is undefined" % atom, 'red')
-
-    def _and(self, stack):
-        '''
-        and : (bool bool -> bool)
-
-        desc:
-            returns True if both of the top two values on the stack are True
-
-        tags:
-            level0,boolean
-        '''
-        a, b = stack.pop_2()
-        stack.push(a and b)
-
-    def _or(self, stack):
-        '''
-        or : (bool bool -> bool)
-
-        "desc:
-            returns True if either of the top two values on the stack are True
-
-        tags:
-            level0,boolean
-        '''
-        a, b = stack.pop_2()
-        stack.push(a or b)
-
-    def _import(self, stack):
-        '''
-        #import : (string:module_name -> --)
-
-        desc:
-            imports the named module for use by the program
-            Note: members of the module are accessed  with this notation: <module name>.<member name>
-                  parameters must precede the function call as a list with arguments in the order
-                  required by the function. E.g. ([base expt] list math.pow -> base^expt)
-            Example: 'math #import
-                     'os #import
-                     'localModule #import
-
-        tags:
-            custom,module,import
-        '''
-        what = stack.pop()
-
-        if type(what) == StringType:
-            sys.modules[what] = __import__(what)
-
-        else:
-            raise Exception("#import The module name must be a string")
 
     def _instance(self, stack):
         '''
@@ -680,26 +487,6 @@ class Functions:
             args = str((args,))
 
         self.NSdict[self.userNS]['__inst__'][name] = eval("%s%s" % (cls, args), sys.modules)
-
-    def _info(self, stack):
-        '''
-        #info : (-- -> --)
-
-        desc:
-            lists modules available for use and other bits of useful information
-
-        tags:
-            custom,modules
-        '''
-        keys = sys.modules.keys()
-        keys.sort()
-        stack.output("**modules: " + str(keys), 'green')
-        keys = self.NSdict[self.userNS]['__inst__'].keys()
-        keys.sort()
-        stack.output("**instances: " + str(keys), 'green')
-        keys = self.NSdict[self.userNS]['__vars__'].keys()
-        keys.sort()
-        stack.output("**user-defined variables: " + str(keys), 'green')
 
     def _saveVar(self, stack):
         '''
@@ -855,45 +642,25 @@ class Functions:
         '''
         self._words(stack, True)
 
-    def _trace(self, cat):
+    def _info(self, stack):
         '''
-        #trace: (-- -> --)
+        #info : (-- -> --)
 
         desc:
-            toggles the global tracing flag to enable simple tracing of function
-            execution.
+            lists modules available for use and other bits of useful information
 
         tags:
-            custom,debugging
+            custom,modules
         '''
-        # This will fail. Needs fixing.
-        cat.toggle_trace()
-
-    def _rightShift(self, stack):
-        '''
-        >> : (int:base int:n -> int)
-
-        descr:
-            performs a right shift of n bits on a base integer
-
-        tags:
-            level0,math
-        '''
-        n, val = stack.pop_2()
-        stack.push(int(val) >> n)
-
-    def _leftShift(self, stack):
-        """'
-        << : (int:base int:n -> int)
-
-        descr:
-            performs a left shift of n bits on a base integer
-
-        tags:
-            level0,math
-        """
-        n, val = stack.pop_2()
-        stack.push(int(val) << n)
+        keys = sys.modules.keys()
+        keys.sort()
+        stack.output("**modules: " + str(keys), 'green')
+        keys = self.NSdict[self.userNS]['__inst__'].keys()
+        keys.sort()
+        stack.output("**instances: " + str(keys), 'green')
+        keys = self.NSdict[self.userNS]['__vars__'].keys()
+        keys.sort()
+        stack.output("**user-defined variables: " + str(keys), 'green')
 
     def _udf(self, stack):
         '''
@@ -949,21 +716,6 @@ class Functions:
 
             elif word in self.NSdict[self.userNS]:
                 del self.NSdict[self.userNS][word]
-
-    def _divmod(self, stack):
-        '''
-        divmod : (nbr nbr -> nbr nbr)
-        /%     : (nbr nbr -> nbr nbr)
-
-        desc:
-            applies divmod function to top two members on stack. Number on top
-            is the modulus. Returns quotient, remainder on stack (remainder on top).
-
-        tags:
-            level0,mathematics
-        '''
-        a, b = stack.pop_2()
-        stack.push(divmod(b, a), multi=True)
 
     def _listDefinitionFiles(self, stack):
         '''
@@ -1099,280 +851,6 @@ class Functions:
         self.NSdict['std']['__globals__']['prompt'] = str(stack.pop())
 
     # Now begins methods implementing functions with non-conflicting acceptable Python names
-    def inc(self, cat):
-        '''
-        inc : (nbr -> nbr)
-
-        desc:
-            increments the number on top ofthe stack by 1
-
-        tags:
-            level0,mathematics
-        '''
-        cat.stack.push(cat.stack.pop() + 1)
-
-    def dec(self, cat):
-        '''
-        dec : (nbr -> nbr)
-
-        desc:
-            decrements the number on top ofthe stack by 1
-
-        tags:
-            level0,mathematics
-        '''
-        cat.stack.push(cat.stack.pop() - 1)
-
-    def add(self, stack):
-        '''
-        add : (nbr nbr -> nbr)
-
-        desc:
-            adds top two numbers on the stack returning the sum on top of the stack
-            Note that if instead of numbers one has other objects such as strings
-            or lists, they will be concatenated.
-
-        tags:
-            level0,mathematics
-        '''
-        a, b = stack.pop_2()
-        stack.push(b + a)
-
-    def mod(self, stack):
-        '''
-        mod : (nbr nbr -> nbr)
-
-        desc:
-            applies modulus function to top two members on stack. Number at [0]
-            is the modulus.
-
-        tags:
-            level0,mathematics
-        '''
-        a, b = stack.pop_2()
-        stack.push(b % a)
-
-    def pwr(self, stack):
-        '''
-        pwr : (nbr:base nbr:expt -> nbr)
-
-        desc:
-            base**expt is pushed onto the stack
-
-        tags:
-            level0,math
-        '''
-        expt, base = stack.pop_2()
-
-        if type(base) == StringType:
-            base = eval(base)
-
-        if type(base) not in [IntType, LongType, FloatType]:
-            raise ValueError("pwr: The base must be a number")
-
-        if type(expt) == StringType:
-            expt = eval(expt)
-
-        if type(expt) not in [IntType, LongType, FloatType]:
-            raise ValueError("pwr: The exponent must be a number")
-
-        stack.push(base ** expt)
-
-    def round(self, stack):
-        '''
-        round : (float:nbr int:dp -> float:nbr)
-
-        desc:
-            rounds the floating point number at [-1] to the number of
-            decimal places specified by the integer at [0]
-
-        tags:
-            level1,mathematics
-        '''
-        dp, nbr = stack.pop_2()
-
-        if type(nbr) != FloatType:
-            nbr = float(nbr)
-
-        dp = int(dp)
-
-        stack.push(round(nbr, dp))
-
-    def abs(self, stack):
-        '''
-        abs : (nbr -> nbr)
-
-        desc:
-            replaces the number on top of the stack with its absolute value
-
-        tags:
-            level1,mathematics
-        '''
-        nbr = stack.pop()
-
-        if type(nbr) == StringType:
-            nbr = eval(nbr)
-
-        if type(nbr) in [IntType, LongType, FloatType]:
-            stack.push(abs(nbr))
-
-        else:
-            raise ValueError("abs: Argument is not a number")
-
-    def all(self, stack):
-        '''
-        all : (list -> bool)
-
-        desc:
-            returns true on top of the  stack if all of the elements of the
-            list on top of the stack are true
-
-        tags:
-            custom,mathematics
-        '''
-        iter = stack.pop()
-
-        if type(iter) == StringType:
-            iter = eval(iter)
-
-        if type(iter) in [ListType, TupleType]:
-            stack.push(all(iter))
-
-        else:
-            raise ValueError("all: Argument must be an iterable")
-
-    def any(self, stack):
-        '''
-        any : (list -> bool)
-
-        desc:
-            Returns true on top of the stack if any element of the list
-            on top of the stack is true
-
-        tags:
-            custom,lists
-        '''
-        iter = stack.pop()
-
-        if type(iter) == StringType:
-            iter = eval(iter)
-
-        if type(iter) in [ListType, TupleType]:
-            stack.push(any(iter))
-
-        else:
-            raise ValueError("any: Expect an iterable (list) on top of the stack")
-
-    def chr(self, stack):
-        '''
-        chr : (int -> string)
-
-        desc:
-            converts the integer on top of the stack to a single character string
-
-        tags:
-            custom,string
-        '''
-        val = stack.pop()
-
-        if type(val) == StringType and val.isdigit():
-            val = int(val)
-
-        if type(val) == FloatType:
-            val = int(val)
-
-        if type(val) in [IntType, LongType]:
-            stack.push(chr(val))
-
-        else:
-            raise ValueError("chr: Cannot convert argument to an integer")
-
-    def enum(self, stack):
-        '''
-        enum : (list int:start -> list)
-
-        desc:
-            returns an enumerated list on top of the stack based on the
-            starting int at [0] and the list at [-1] on the stack
-
-        tags:
-            custom,lists
-        '''
-        start, lst = stack.pop_2()
-
-        if type(start) in [StringType, FloatType]:
-            start = int(start)
-
-        if type(start) not in [IntType, LongType]:
-            raise ValueError("enum: Starting value must be an integer")
-
-        if type(lst) == StringType:
-            lst = eval(lst)
-
-        if type(lst) not in [ListType, TupleType]:
-            raise ValueError("enum: The list must be an iterable or convertable to one")
-
-        stack.push([[x, y] for x, y in enumerate(lst, start)])
-
-    def hash(self, stack):
-        '''
-        hash : (any -> int)
-
-        desc:
-            pushes the hash value of the object on top of the stack onto the stack
-
-        tags:
-            custom,math
-        '''
-        stack.push(hash(stack.pop()))
-
-    def id(self, stack):
-        '''
-        id : (any -> any int:id)
-
-        desc:
-            calculates a unique integer id for the object on top of
-            the stack and then pushes this id onto the stack. This id
-            is unique as long as the session lasts. A new session will
-            produce a different id.
-
-        tags:
-            custom,math
-        '''
-        stack.push(id(stack.peek()))
-
-    def ord(self, stack):
-        '''
-        ord : (string:chr -> int)
-
-        desc:
-            takes the single character string (or first character of a longer string)
-            and pushes the integer code for that character onto the stack
-
-        tags:
-            custom,string,math
-        '''
-        obj = stack.pop()
-
-        if type(obj) in [ListType, TupleType]:
-            obj = obj[0]
-
-        if type(obj) != StringType:
-            obj = str(obj)
-
-        stack.push(ord(obj[0]))
-
-    def sort(self, stack):
-        '''
-        sort : (list -> list)
-
-        desc:
-            sorts the list on top of the stack in place
-
-        tags:
-            custom,sort,list
-        '''
-        stack.push(sorted(stack.pop()))
 
     def zip(self, stack):
         '''
