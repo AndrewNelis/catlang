@@ -1,0 +1,79 @@
+// Dedicated to the public domain by Christopher Diggins
+// This file is free to be used, modified or redistributed for any purpose,
+// without restriction, obligation or warantee.
+// http://www.cdiggins.com
+
+"math" import
+
+define pow : (nbr:base nbr:expt -> nbr) { math.pow }
+define sin : (nbr -> nbr) { math.sin }
+define cos : (nbr -> nbr) { math.cos }
+define tan : (nbr -> nbr) { math.tan }
+define asin : (nbr -> nbr) { math.asin }
+define acos : (nbr -> nbr) { math.acos }
+define atan : (nbr -> nbr) { math.atan }
+define atan2 : (nbr:y nbr:x -> nbr) { math.atan2 }
+define sinh : (nbr -> nbr) { math.sinh }
+define cosh : (nbr -> nbr) { math.cosh }
+define tanh : (nbr -> nbr) { math.tanh }
+define sin_cos : (nbr -> nbr nbr) { dup sin swap cos }
+define sqrt : (nbr -> nbr) { math.sqrt }
+define ceil : (nbr -> nbr) { math.ceil }
+define floor : (nbr -> nbr) { math.floor }
+define log : (nbr -> nbr) { math.log }
+define log10 : (nbr -> nbr) { math.log10 }
+define ln : (nbr -> nbr) { math.ln }
+define pi : (A' -> A' nbr) { math.pi }
+
+define get_opposite
+{{
+  desc:
+    Given the hypotenuse of a triangle and the angle theta
+    computes the length of the opposite side
+  semantics:
+    get_opposite(hyp theta) => asin(theta) * hyp
+  deps:
+    asin 
+}}
+{ asin * }
+
+define get_adjacent
+{{
+  desc:
+    Given the hypotenuse of a triangle and the angle theta
+    computes the length of the adjacent side
+  semantics:
+    get_adjacent(hyp theta) => acos(theta) * hyp
+  deps:
+    acos 
+}}
+{ acos * }
+
+define point_from_angle
+{{
+  desc:
+    Returns a point given an angle and the
+    length of the hypotenuse
+  semantics:
+    point_from_angle(hyp theta) => (get_opposite(hyp theta), get_adjacent(hyp_theta))
+  deps:
+    get_adjacent,get_opposite 
+}}
+{
+  dup2
+  get_adjacent swap
+  get_opposite
+  pair
+}
+
+define point_on_circle
+{{
+  desc:
+    Returns the location i/nth point of a circle centered around the origin
+    with radius "rad".
+  semantics:
+    point_from_circle(radius, i, n) => point_from_angle(radius, 2 * pi * i / n)
+  deps:
+    point_from_angle,pi 
+}}
+{ div 2 pi * * point_from_angle }

@@ -1,0 +1,202 @@
+// Dedicated to the public domain by Christopher Diggins
+// This file is free to be used, modified or redistributed for any purpose,
+// without restriction, obligation or warantee.
+// http://www.cdiggins.com
+
+//==============================================================================
+// Vector functions
+
+define vec_sum : (list -> any)
+{{
+  desc:
+    Computes the sum of elements in a vector.
+  test:
+    in: [0 1 2] list vec_sum
+    out: 3
+  tags:
+    level1,vectors
+}}
+{ 0 [+] fold }
+
+define vec_scale : (list any -> list)
+{{
+  desc:
+    Multiplies all items in a vector by a scalar value.
+  test:
+    in: [0 1 2] list 2 vec_scale
+    out: [0 2 4] list
+  tags:
+    level1,vectors
+}}
+{ [*] papply map }
+
+define vec_slide : (list any -> list)
+{{
+  desc:
+    Adds a value to all items in a vector.
+  test:
+    in: [0 1 2] list 2 vec_slide
+    out: [2 3 4] list
+  tags:
+    level1,vectors
+}}
+{ [+] papply map }
+
+define vec_dot_prod : (list list -> nbr)
+{{
+  desc:
+    performs the standard dot product of twi vectors (lists)
+  test:
+    in: [1 2 3] list [4 5 6] list vec_dot_prod
+    out: 32
+  tags:
+    level1,vectors
+}}
+{
+[mul] bin_op 0 [add] fold
+}
+
+define vec_norm : (list:nbr -> nbr)
+{{
+  desc:
+    pushes the norm of the vector (list) onto the stack
+    Note: requires math.sqrt
+  test:
+    in: [1 2 3] list vec_norm
+    out: 3.741657...
+  tags:
+    level1,vectors
+}}
+{
+  0 swap [2 ** +] foreach math.sqrt
+}
+
+define vec_fill : (any:fill int:n -> list:any)
+{{
+  desc:
+    creates a vector of length n on top of the stack filled with the 'fill' object
+  test:
+    in: 'abc 5 vec_fill
+    out: ['abc 'abc 'abc 'abc 'abc] list
+  tags:
+    level1,vectors
+}}
+{
+  nil swap [swap dup +rot cons] swap repeat popd
+}
+
+define vec_add : (list:nbr list:nbr -> list:nbr)
+{{
+  desc:
+    element-wise addition of two vectors
+  test:
+    in: [1 2 3] list [4 5 6] list vec_add
+    out: [5 7 9] list
+  tags:
+    level1,vectors
+}}
+{
+  [add] bin_op
+}
+
+define vec_sub : (list:nbr list:nbr -> list:nbr)
+{{
+  desc:
+    element-wise subtraction of two vectors
+  test:
+    in: [4 5 6 list [1 2 3] list vec_sub
+    out: [3 3 3] list
+  tags:
+    level1,vectors
+}}
+{
+  [sub] bin_op
+}
+
+define vec_mul : (list:nbr list:nbr -> list:nbr)
+{{
+  desc:
+    element-wise multiplication of two vectors
+  test:
+    in: [1 2 3] list [4 5 6] list vec_mul
+    out: [4 10 18] list
+  tags:
+    level1,vectors
+}}
+{
+  [mul] bin_op
+}
+
+define vec_div : (list:nbr list:nbr -> list:nbr)
+{{
+  desc:
+    element-wise division of two vectors
+  test:
+    in: [4 5 6 list [1 2 3] list vec_div
+    out: [4 2.5 2] list
+  tags:
+    level1,vectors
+}}
+{
+  [div] bin_op
+}
+
+define vec_mod : (list:nbr list:nbr -> list:nbr)
+{{
+  desc:
+    element-wise modulus of two vectors
+  test:
+    in: [4 5 6 list [1 2 3] list vec_mod
+    out: [0 1 0] list
+  tags:
+    level1,vectors
+}}
+{
+  [mod] bin_op
+}
+
+define vec_divmod : (list:nbr list:nbr -> list:nbr)
+{{
+  desc:
+    element-wise divmod of two vectors
+  test:
+    in: [4 5 6 list [1 2 3] list vec_divmod
+    out: [[4 0] list  [2 1] list [2  0] list] list
+  tags:
+    level1,vectors
+}}
+{
+  [divmod pair] bin_op
+}
+
+define vec_eq : (list:nbr list:nbr -> list:nbr)
+{{
+  desc:
+    element-wise equality of two vectors
+  test:
+    in: [4 5 6] list [6 5 4] list vec_eq
+    out: [false true false] list
+  tags:
+    level1,vectors
+}}
+{
+  [eq] bin_op
+}
+
+define vec_ident : (list:nbr list:nbr -> boolean)
+{{
+  desc:
+    check for identical vectors
+  test:
+    in: [4 5 6] list [4 5 6] list vec_ident
+    out: true
+  test:
+    in: [1 2 3] list [1 3 2] list  vec_ident
+    out: false
+  tags:
+    level1,vectors
+}}
+{
+  [eq] bin_op true [and] fold
+}
+
