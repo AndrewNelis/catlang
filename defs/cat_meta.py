@@ -7,7 +7,7 @@ from fnmatch import fnmatch
 from cat_tagExpr import TagExpr
 
 ns      = NameSpace()
-mapTags = { 'universe' : Set() }
+mapTags = { }
 letters = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 
 @define(ns, 'doc')
@@ -282,6 +282,7 @@ def _tagMap( cat ) :
     global mapTags
     
     # build the tag-mapping directory if necessary
+    mapTags  = { 'universe' : Set() }
     findTags = re.compile( r'tags:\s*(\S+)' )
     
     # first the built-in words

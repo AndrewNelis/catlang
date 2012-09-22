@@ -209,10 +209,10 @@ def triplet( cat ) :
     t, n, nn = cat.stack.pop_n( 3 )
     cat.stack.push( [nn, n, t] )
 
-@define(ns, 'nTuple')
+@define(ns, 'n_tuple')
 def nTuple( cat ) :
     '''
-    tuple : (any:elt_n any:elt_n-1 ... any:elt_1 int:n -> list:ntuple)
+    n_tuple : (any:elt_n any:elt_n-1 ... any:elt_1 int:n -> list:ntuple)
     
     desc:
         Creates a list from n elements on the cat.stack
@@ -246,15 +246,15 @@ def _range( cat ) :
 @define(ns, 'len')
 def count( cat ) :
     '''
-    count : (list:src -> list:src int:length)
+    len : (list|string|dict:src -> list|string|dict:src int:length)
     
     desc:
-        returns the number of items in a list
-        The list is not destroyed
-        src: the source list
-        len: the numeber of elements in the list
+        returns the number of items in a list or of characters in a string or of keys
+        in a dict. The list, string or dict is not destroyed.
+        src: the source list, string, or dict
+        len: the numeber of elements in the list, string, or dict
     tags:
-        lists,length,size
+        lists,length,size,string,dict
     '''
     cat.stack.push( len(cat.stack.peek()) )
 
@@ -450,14 +450,14 @@ def swap_at( cat ) :
 @define(ns, 'empty')
 def empty( cat ) :
     '''
-    empty : (list|string:base -> list|string:base bool:TF)
+    empty : (list|string|dict:base -> list|string|dict:base bool:TF)
 
     desc:
-        pushes True onto the stack if the list or string is empty
-        base: the list or string to be tested
-        TF: True if the list or string is empty; False otherwise
+        pushes True onto the stack if the list, string. or dict is empty
+        base: the list, string or dict to be tested
+        TF: True if the list, string, or dict is empty; False otherwise
     tags:
-        lists,strings,conditional
+        list,string,conditional,dict
     '''
     lst = cat.stack.peek()
     cat.stack.push( len(lst) == 0 )
@@ -523,10 +523,10 @@ def list_to_hash( cat ) :
     else :
         raise ValueError, "list_to_hash: Expect a list on top of the stack"
 
-@define(ns, 'pyList')
+@define(ns, 'py_list')
 def pyList( cat ) :
     '''
-    pyList : (string:arg|any:arg -> list:new)
+    py_list : (string|any:arg -> list:new)
     
     desc:
         converts a string to a list

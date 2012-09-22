@@ -3,18 +3,17 @@
 from cat.namespace import *
 ns = NameSpace()
 
-@define(ns, 'createNS')
+@define(ns, 'create_ns')
 def createNS( cat ) :
     '''
-    createNS : (string:name -> --)
+    create_ns : (string:name -> --)
     
     desc:
         Creates one or more namespaces from the string on top of the stack
         Note: name may also be of the form name1,name2,name3,... (e.g. 'flow,test)
               or a list  (e.g. ['flow 'test] list
-    
     tags:
-        level2,namespace,create,new
+        namespace,create,new
     '''
     names = cat.stack.pop_list()
     
@@ -28,10 +27,10 @@ def createNS( cat ) :
         else :
             cat.ns.createNS( name )
 
-@define(ns, 'setNS')
+@define(ns, 'set_ns')
 def setNS( cat ) :
     '''
-    setNS : (string:ns|list:ns -> --)
+    set_ns : (string:ns|list:ns -> --)
     
     desc:
         sets the list of namespaces to be searched, as found in the currently active namespace,
@@ -54,11 +53,11 @@ def setNS( cat ) :
     
     cat.ns.setUserNS( lst )
 
-@define(ns, 'renameNS,mv')
+@define(ns, 'rename_ns,mv')
 def renameNS( cat ) :
     '''
-    renameNS : (string:old string:new -> --)
-    mv       : (string:old string:new -> --)
+    rename_ns : (string:old string:new -> --)
+    mv        : (string:old string:new -> --)
     
     desc:
         renames an old namespace to a new name
@@ -75,10 +74,10 @@ def renameNS( cat ) :
     
     cat.ns.renameNS( new, old )
 
-@define(ns, 'copyNS')
+@define(ns, 'copy_ns')
 def copyNS( cat ) :
     '''
-    copyNS : (string:src string:dest -> --)
+    copy_ns : (string:src string:dest -> --)
     
     desc:
         copy the src namespace to a new dest
@@ -97,10 +96,10 @@ def copyNS( cat ) :
     
     cat.ns.copyNS( src, dest )
 
-@define(ns, 'appendNS')
+@define(ns, 'append_ns')
 def appendNS( cat ) :
     '''
-    appendNS : (string:src string:dest -> --)
+    append_ns : (string:src string:dest -> --)
     
     desc:
         append the src namespace to a dest one
@@ -122,10 +121,10 @@ def appendNS( cat ) :
     
     cat.ns.appendNS( src, dest )
 
-@define(ns, 'delNS,rm')
+@define(ns, 'del_ns,rm')
 def delNS( cat ) :
     '''
-    delNS : (string:name -> --)
+    del_ns : (string:name -> --)
     
     desc:
         Removes the named namespace dictionary
@@ -144,10 +143,10 @@ def delNS( cat ) :
             cat.ns.delNS( ns )
             cat.ns.removeAllLinkRefsNS( ns )
 
-@define(ns, 'showAllNS')
+@define(ns, 'show_all_ns')
 def showAllNS( cat ) :
     '''
-    showAllNS : (-- -> --)
+    show_all_ns : (-- -> --)
     
     desc:
         Shows the names of ALL the available namespaces
@@ -158,10 +157,10 @@ def showAllNS( cat ) :
     names.sort()
     cat.output( cat.ns._formatList(names), 'green' )
 
-@define(ns, "showLinksNS")
+@define(ns, "show_linked_ns")
 def showNSLinks( cat ) :
     '''
-    showLinksNS : (-- -> --)
+    show_linked_ns : (-- -> --)
     
     desc:
         Displays all namespace links in the currently active namespace
@@ -172,10 +171,10 @@ def showNSLinks( cat ) :
     links.sort()
     cat.output( cat.ns._formatList(links), 'green' )
 
-@define(ns, 'getAllNS')
+@define(ns, 'get_all_ns')
 def getNS( cat ) :
     '''
-    getAllNS : (-- -> list:names)
+    get_all_ns : (-- -> list:names)
     
     desc:
         Pushes a list of the names of the available namespaces onto the stack
@@ -187,10 +186,10 @@ def getNS( cat ) :
     names.sort()
     cat.stack.push( names )
 
-@define(ns, 'loadNS')
+@define(ns, 'load_ns')
 def loadNS( cat ) :
     '''
-    loadNS : (string:fileName string:namespaceName -> --)
+    load_ns : (string:fileName string:namespaceName -> --)
     
     desc:
         Loads the named file of definitions into the specified namespace
@@ -211,10 +210,10 @@ def loadNS( cat ) :
     load( cat, True, nsName )
     cat.ns.targetNS = ''
 
-@define(ns, 'wordsInNS')
+@define(ns, 'words_in_ns')
 def wordsInNS( cat ) :
     '''
-    wordsNS : (string:nsName -> --)
+    words_in_ns : (string:nsName -> --)
     
     desc:
         Displays on the console the names of all words in a given namespace
@@ -232,10 +231,10 @@ def wordsInNS( cat ) :
         cat.output( "For namespace %s:" % nsName, 'green' )
         cat.output(cat.ns._formatList(keys), 'green' )
 
-@define(ns, 'linksInNS')
+@define(ns, 'links_in_ns')
 def linksInNS( cat ) :
     '''
-    linksNS : (string:nsName -> --)
+    links_in_ns : (string:nsName -> --)
     
     desc:
         Displays on the console the names of all links in a given namespace
@@ -253,11 +252,11 @@ def linksInNS( cat ) :
         cat.output( "For namespace %s:" % nsName, 'green' )
         cat.output(cat.ns._formatList(keys), 'green' )
 
-@define(ns, 'showLinkedInNS,ls')
+@define(ns, 'show_linked_in_ns,ls')
 def showLinkedNS( cat ) :
     '''
-    showLinkedInNS : (-- -> --)
-    ls             : (-- -> --)
+    show_linked_in_ns : (-- -> --)
+    ls                : (-- -> --)
     
     desc:
         lists all the active namespaces (those linked to the user's current namespace)
@@ -269,10 +268,10 @@ def showLinkedNS( cat ) :
     links.sort()
     cat.output( cat.ns._formatList(links), 'green' )
 
-@define(ns, 'purgeNS')
+@define(ns, 'purge_ns')
 def purgeNS( cat ) :
     '''
-    purgeNS : (string:nsNames -> --)
+    purge_ns : (string:nsNames -> --)
     
     desc:
         Removes all definitions from the namespace
@@ -288,11 +287,11 @@ def purgeNS( cat ) :
         if ns != 'std' and ns not in cat.ns.defns :
             cat.ns.delAllWords( ns )
 
-@define(ns, 'focusNS,cd')
+@define(ns, 'focus_ns,cd')
 def focusNS( cat ) :
     '''
-    focusNS : (string:name -> --)
-    cd      : (string:name -> --)
+    focus_ns : (string:name -> --)
+    cd       : (string:name -> --)
     
     desc:
         Changes the working (active) namespace to the one given by
@@ -311,11 +310,11 @@ def focusNS( cat ) :
     
     cat.ns.changeUserNS( name )
 
-@define(ns, 'showUserNS,pwd')
+@define(ns, 'show_user_ns,pwd')
 def showUserNS( cat ) :
     '''
-    showUserNS : (-- -> --)
-    pwd        : (-- -> --)
+    show_user_ns : (-- -> --)
+    pwd          : (-- -> --)
     
     desc:
         Displays the current user namespace
@@ -324,10 +323,11 @@ def showUserNS( cat ) :
     '''
     cat.output( "  " + cat.ns.getUserNS(), 'green' )
 
-@define(ns, 'getUserNS')
+@define(ns, 'get_user_ns,cwd')
 def getUserNS( cat ) :
     '''
-    getUserNS : (-- ->  string:namespace)
+    get_user_ns : (-- -> string:namespace)
+    cwd         : (-- -> string:namespace)
     
     desc:
         Pushes the name of the currently active namespace onto the stack
@@ -337,11 +337,11 @@ def getUserNS( cat ) :
     '''
     cat.stack.push( cat.ns.getUserNS() )
 
-@define(ns, 'linkToNS,ln')
+@define(ns, 'link_to_ns,ln')
 def linkToNS( cat ) :
     '''
-    linkToNS : (string:namespaceName -> --)
-    ln       : (string:namespaceName -> --)
+    link_to_ns : (string:namespaceName -> --)
+    ln         : (string:namespaceName -> --)
     
     desc:
         appends the namespace name on top of the stack to the active namespace's link list
@@ -360,11 +360,11 @@ def linkToNS( cat ) :
         
         cat.ns.addLink( name )
 
-@define(ns, 'unlinkNS')
+@define(ns, 'unlink_ns')
 def unlinkNS( cat ) :
     '''
-    unlinkNS : (string:name -> --)
-    rm       : (string:name -> --)
+    unlink_ns : (string:name -> --)
+    rm        : (string:name -> --)
     
     desc:
         removes the namespace whose name is on top of the stack
@@ -390,10 +390,10 @@ def unlinkNS( cat ) :
         
         cat.ns.delLink( name, ns )
 
-@define(ns, 'removeWordNS')
+@define(ns, 'remove_word_ns')
 def removeWordNS( cat ) :
     '''
-    removeWordNS : (string:word string:namespace -> --)
+    remove_word_ns : (string:word string:namespace -> --)
     
     desc:
         Removes the word(s) from the specified namespace
@@ -416,10 +416,10 @@ def removeWordNS( cat ) :
         
         cat.ns.delWord( name, nspc )
 
-@define(ns, 'purgeLinkedNS')
+@define(ns, 'purge_linked_ns')
 def purgeLinksNS( cat ) :
     '''
-    purgeLinksNS : (-- -> --)
+    purge_linked_ns : (-- -> --)
     
     desc:
         Removes all links from the active user namespace

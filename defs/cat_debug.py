@@ -3,7 +3,7 @@
 from cat.namespace import *
 ns = NameSpace()
 
-@define(ns, 'dumpNS')
+@define(ns, 'dump_ns')
 def dumpNS( cat ) :
     '''
     dumpNS : (string:what string:ns -> --)

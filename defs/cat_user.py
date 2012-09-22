@@ -26,7 +26,13 @@ def arith( cat ) :
     arith : (string:expression -> nbr:value)
     
     desc:
-    	Evaluates the expression returning the value on the stack
+    	Evaluates the expression returning the value on the stack. User-defined variables,
+    	calls to functions in modules, and access to stack variables ($0 -- value on
+    	stack at [0], $1 -- value at [-1], etc.). Stack values used in the expression are
+    	removed from the stack. For example:
+    	
+    	Cat> math.pi "3 * math.sin($0) + 83" arith
+        
     	expression: the arithmetic expression to be evaluated
     	value: the number returned
     tags:
