@@ -300,5 +300,22 @@ def oct_str( cat ) :
     """
     cat.stack.push( oct(int(cat.stack.pop())) )
 
+@define(ns, 'str_as_hex')
+def str_as_hex( cat ) :
+    """
+    str_as_hex : (string:src -> string:str_as_hex)
+    
+    desc
+        Pushes the hex character representation of the string onto the stack
+        src: the string to be converted to a string of hex characters
+        str_as_hex: the resulting string representation of the source as hex digits
+    tags:
+        string,conversion,hex
+    """
+    s  = cat.stack.pop()
+    ss = [hex(ord(x)) for x in s ]
+    sss = ".".join( ss )
+    cat.stack.push( sss.replace("0x", "") )
+
 def _returnNS() :
     return ns

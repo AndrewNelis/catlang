@@ -212,7 +212,7 @@ def try_catch( cat ) :
         cat.eval( t )
     
     except Exception, msg :
-        cat.output( str(msg), 'red' )
+        cat.output( str(msg), cat.ns.config.get('display', 'error') )
         cat.eval( c )
 
 @define(ns, 'raise,throw')

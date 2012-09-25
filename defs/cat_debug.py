@@ -42,7 +42,7 @@ def dumpStack( cat ) :
     tags:
         debug,console,stack,dump
     '''
-    cat.output( str(cat.stack), 'green' )
+    cat.output( str(cat.stack), cat.ns.info_colour )
 
 @define(ns, 'pdb')
 def _pdb( cat ) :

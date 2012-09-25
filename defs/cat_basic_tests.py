@@ -111,7 +111,7 @@ tests = (
     ('false or', [True]),
     ('drop 2 3 pair', [[2, 3]]),
     ('drop 3 2 popd', [2]),
-    ('drop "1,2,3,4" pyList', [['1', '2', '3', '4']]),
+    ('drop "1,2,3,4" py_list', [['1', '2', '3', '4']]),
     ('drop 3 [2 *] 2 repeat', [12]),
     ('drop "Hello world?" "world" "Dolly" replace_str', ['Hello Dolly?']),
     ('drop "abcabc" "b" rindex_of', [4]),
@@ -176,11 +176,13 @@ def runtests(cat):
     tags:
         diagnostics,debug
     """
-    ev = cat.eval
-
+    ev  = cat.eval
     bad = 0
+    n   = 0
 
     for expression, expected_result in tests:
+        n += 1
+        
         try:
             result = ev(expression)
         except Exception:
@@ -193,7 +195,7 @@ def runtests(cat):
             bad += 1
 
     if not bad:
-        cat.output("No errors!!", 'green')
+        cat.output("Performed %d tests with no errors!!" % n, 'green')
 
     else:
         cat.output("%d errors" % bad, 'green')

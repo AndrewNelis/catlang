@@ -1,6 +1,6 @@
 from cat.namespace import NameSpace
 from sets import Set
-import sys
+import sys, os, ConfigParser
 
 class NS:
     '''Creates and manipulates namespaces
@@ -16,6 +16,17 @@ class NS:
         '''creates all necessary structures for namespaces'''
         self.cat      = catEval
         self.targetNS = ''
+        self.config   = ConfigParser.ConfigParser()
+        
+        # read the configuration file
+        cfg_file = os.getcwd() + "/Cat/catlang.cfg"
+        self.config.readfp( open(cfg_file) )
+        
+        if self.config.getboolean('display', 'use_colour' ) :
+            self.info_colour = self.config.get( 'display', 'info' )
+        
+        else :
+            self.info_colour = None
         
         # create two standard namespaces
         self._nsDict = { 'std' : NameSpace(),
@@ -38,8 +49,8 @@ class NS:
         self._nsDict['std'].addLink( 'user' )
         
         # prime the 'global' directory with a few values
-        self._nsDict['std'].addVar( 'CatDefs', 'Cat/CatDefs/' )
-        self._nsDict['std'].addVar( 'prompt', "\nCat> " )
+        self._nsDict['std'].addVar( 'CatDefs', self.config.get('paths','catdefs') )
+        self._nsDict['std'].addVar( 'prompt',  self.config.get('prompt', 'default') )
     
     def _searchLinks(self, item, startNS='std', kind='words', viewed=[] ):
         '''Recursive search of the links for a specified item. Search is depth-first.
@@ -810,7 +821,7 @@ class NS:
     
     def _printList( self, theList, across=5 ) :
         '''Print the elements in theList'''
-        cat.output( self._formatList(theList, across), 'green' )
+        cat.output( self._formatList(theList, across), self.info_colour )
     
     def _dumpList( self, theList, indent=0 ) :
         '''Dump a list'''
@@ -873,7 +884,7 @@ class NS:
         
         for item in dicts:
             for ns in keys :
-                self.cat.output( "\nDumping  %s in '%s':" % (item, ns), 'green' )
-                self._nsDict[ns].dump(mapping[item], 'green')
+                self.cat.output( "\nDumping  %s in '%s':" % (item, ns), self.info_colour )
+                self._nsDict[ns].dump(mapping[item], self.info_colour)
             
             self.cat.output( "" )

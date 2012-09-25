@@ -33,7 +33,6 @@ class CatEval:
         self.parser    = Parser()
         self.stack     = Stack(initial=initial_stack)
         self.output_fn = output_fn
-#        self.ns.dumpAll('all')
 
     def toggle_trace( self ) :
         self._flags['trace'] = not self._flags['trace']

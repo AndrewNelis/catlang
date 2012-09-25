@@ -33,7 +33,7 @@ def show_doc( cat ) :
             defined, obj = cat.ns.getWord( name, ns )
             
             if defined :
-                cat.output( obj[1], 'green' )
+                cat.output( obj[1], cat.ns.info_colour )
                 return
         
         else :
@@ -42,10 +42,10 @@ def show_doc( cat ) :
     defined, obj, _ = cat.ns.getWord( name )
     
     if defined :
-        cat.output( obj[1], 'green' )
+        cat.output( obj[1], cat.ns.info_colour )
     
     else :
-        cat.output( "No description for " + name, 'red' )
+        cat.output( "No description for " + name, cat.ns.info_colour )
 
 @define(ns, 'def')
 def dumpdef( cat ) :
@@ -76,13 +76,13 @@ def dumpdef( cat ) :
     
     if defined :
         if callable(func) :
-            cat.output( "Function %s is a primitive" % atom, 'green' )
+            cat.output( "Function %s is a primitive" % atom, cat.ns.info_colour )
         
         else :
-            cat.output( "%s: %s" % (atom, func[0]), 'green' )
+            cat.output( "%s: %s" % (atom, func[0]), cat.ns.info_colour )
     
     else :
-        cat.output( "Function %s is undefined" % atom, 'red' )
+        cat.output( "Function %s is undefined" % atom, cat.ns.config.get('display', 'error') )
 
 @define(ns, 'info')
 def info( cat ) :
@@ -96,42 +96,43 @@ def info( cat ) :
         modules,words,instances,variables,links,filesinfo
     '''
     userNS = cat.ns.getUserNS()
+    i_c    = cat.ns.info_colour
     
     # sys.modules
     keys   = sys.modules.keys()
     keys.sort()
-    cat.output( "**sys.modules:", 'green' )
-    cat.output( cat.ns._formatList( keys, across=4), 'green' )
+    cat.output( "**sys.modules:", i_c )
+    cat.output( cat.ns._formatList( keys, across=4), i_c )
     
     # all user-defined words
     keys = cat.ns.allWordNames()
     keys.sort()
-    cat.output( "**user-defined words in '%s':" % userNS, 'green' )
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( "**user-defined words in '%s':" % userNS, i_c )
+    cat.output( cat.ns._formatList(keys), i_c )
     
     # all user-defined variable names
     keys = cat.ns.allVarNames()
     keys.sort()
-    cat.output( "**user-defined variables in '%s':" % userNS, 'green' )
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( "**user-defined variables in '%s':" % userNS, i_c )
+    cat.output( cat.ns._formatList(keys), i_c )
     
     # all user-defined instances
     keys = cat.ns.instNames()
     keys.sort()
-    cat.output( "**user-defined instances in '%s':" % userNS , 'green' )
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( "**user-defined instances in '%s':" % userNS , i_c )
+    cat.output( cat.ns._formatList(keys), i_c )
     
     # all user-defined files loaded
     keys = cat.ns.allFileNames()
     keys.sort()
-    cat.output( "**user-defined files loaded into '%s':" % userNS, 'green' )
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( "**user-defined files loaded into '%s':" % userNS, i_c )
+    cat.output( cat.ns._formatList(keys), i_c )
     
     # all user-linked namespaces
     keys = cat.ns.getLinks()
     keys.sort()
-    cat.output( "**user-defined namespaces linked to '%s':" % userNS, 'green' )
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( "**user-defined namespaces linked to '%s':" % userNS, i_c )
+    cat.output( cat.ns._formatList(keys), i_c )
 
 @define(ns, 'vars')
 def showVars( cat ) :
@@ -144,23 +145,25 @@ def showVars( cat ) :
     tags:
         user_variables,display
     '''
+    i_c = cat.ns.info_colour
+    
     # variables in the default user namespace and in 'globals'
     keys = cat.ns.allVarNames()
     keys.sort()
-    cat.output( "User-defined variables in default namespace '%s':" % cat.ns.getUserNS(), 'green' )
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( "User-defined variables in default namespace '%s':" % cat.ns.getUserNS(), i_c )
+    cat.output( cat.ns._formatList(keys), i_c )
     keys = cat.ns.allVarNames( 'std' )
     keys.sort()
-    cat.output( "Variables defined in 'globals':", 'green' )
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( "Variables defined in 'globals':", i_c )
+    cat.output( cat.ns._formatList(keys), i_c )
     search = cat.ns.getLinks()
     
     # search for variables in linked-in namespaces
     for ns in cat.ns.getLinks() :
         keys = cat.ns.allVarnames( ns )
         keys.sort()
-        cat.output( "User-defined variables in linked-in namespace '%s':" % ns, 'green' )
-        cat.output( cat.ns._formatList(keys), 'green' )
+        cat.output( "User-defined variables in linked-in namespace '%s':" % ns, i_c )
+        cat.output( cat.ns._formatList(keys), i_c )
 
 @define(ns, 'dir')
 def catDir( cat ) :
@@ -191,7 +194,7 @@ def catDir( cat ) :
     else :
         lst = eval("dir(eval('%s'))" % arg, sys.modules )
     
-    cat.output( cat.ns._formatList(lst, 4), 'green' )
+    cat.output( cat.ns._formatList(lst, 4), cat.ns.info_colour )
 
 @define(ns, 'show_words')
 def words( cat, showAll=False ) :
@@ -199,29 +202,30 @@ def words( cat, showAll=False ) :
     show_words: (-- -> --)
     
     desc:
-        Displays the names of all available words to the user's terminal
+        Displays the names of available words to the user's terminal
     tags:
         words,display
-    '''        
+    '''
+    i_c   = cat.ns.info_colour
     words = cat.ns.builtinWords()
     words.sort()
-    cat.output( "Standard (built-in) words:", 'green' )
-    cat.output( cat.ns._formatList(words), 'green' )
+    cat.output( "Standard (built-in) words:", i_c )
+    cat.output( cat.ns._formatList(words), i_c )
     
     if not showAll :
         words = cat.ns.allWordNamesInNS( None )
         words.sort()
-        cat.output("\nAll words in '%s'" % cat.ns.getUserNS(), 'green' )
-        cat.output( cat.ns._formatList(words), 'green' )
+        cat.output("\nAll words in '%s'" % cat.ns.getUserNS(), i_c )
+        cat.output( cat.ns._formatList(words), i_c )
     
     else :
         wordList = cat.ns.allDefinedWords()
         
         for words in wordList :
-            cat.output( "\nWords defined in namespace '%s':" % words[0], 'green' )
+            cat.output( "\nWords defined in namespace '%s':" % words[0], i_c )
             words = words[1:]
             words.sort()
-            cat.output( cat.ns._formatList(words), 'green' )
+            cat.output( cat.ns._formatList(words), i_c )
     
     cat.output( "" )
 
@@ -249,6 +253,7 @@ def find_words( cat ) :
     tags:
         words,regex,display,console,regular,expression
     '''
+    i_c = cat.ns.info_colour
     foundSome = False
     regex     = re.compile( cat.stack.pop() )
     words     = cat.ns.builtinWords()
@@ -256,8 +261,8 @@ def find_words( cat ) :
     selected.sort()
     
     if len(selected) > 0 :
-        cat.output( "Matching standard (built-in) words:", 'green' )
-        cat.output( cat.ns._formatList(selected), 'green' )
+        cat.output( "Matching standard (built-in) words:", i_c )
+        cat.output( cat.ns._formatList(selected), i_c )
         foundSome = True
     
     wordList = cat.ns.allDefinedWords()
@@ -266,13 +271,13 @@ def find_words( cat ) :
         selected = [ x for x in words[1:] if regex.match(x) ]
         
         if len(selected) > 0 :
-            cat.output( "\nMatching words defined in namespace '%s':" % words[0], 'green' )
+            cat.output( "\nMatching words defined in namespace '%s':" % words[0], i_c )
             selected.sort()
-            cat.output( cat.ns._formatList(selected), 'green' )
+            cat.output( cat.ns._formatList(selected), i_c )
             foundSome = True
     
     if not foundSome :
-        cat.output( "No words match the supplied regex", 'green' )
+        cat.output( "No words match the supplied regex", i_c )
     
     cat.output( "" )
 
@@ -407,19 +412,20 @@ def tag_search( cat ) :
     _tagMap( cat )
     
     # Parse the tag expression and evaluate it
+    i_c   = cat.ns.info_colour
     texpr = TagExpr( mapTags )
     expr  = cat.stack.pop()
     expr2 = _globAnalysis( expr, mapTags )
     words = texpr.parse( expr2 ) # returns a set (that might be empty), or None
     
     if not words or not list(words) :
-        cat.output( "No words matching '%s'" % expr, 'green' )
+        cat.output( "No words matching '%s'" % expr, i_c )
     
     else :
         words = list( words )
         words.sort()
-        cat.output( "Words matching tag expression '%s':" % expr, 'green' )
-        cat.output( cat.ns._formatList(words), 'green' )
+        cat.output( "Words matching tag expression '%s':" % expr, i_c )
+        cat.output( cat.ns._formatList(words), i_c )
 
 @define(ns, 'show_tags')
 def show_tags( cat ) :
@@ -441,7 +447,7 @@ def show_tags( cat ) :
         count = len( mapTags[tag] )
         tagInfo.append( "%s/%d" % (tag, count) )
     
-    cat.output( cat.ns._formatList(tagInfo), 'green' )
+    cat.output( cat.ns._formatList(tagInfo), cat.ns.info_colour )
 
 @define(ns, 'show_insts')
 def show_inst( cat ) :
@@ -454,7 +460,7 @@ def show_inst( cat ) :
     tags:
         instances,display,console
     '''
-    cat.output( cat.ns._formatList(cat.ns.instNames()), 'green' )
+    cat.output( cat.ns._formatList(cat.ns.instNames()), cat.ns.info_colour )
 
 @define(ns, 'show_all_insts')
 def showAllInsts( cat ) :
@@ -466,13 +472,14 @@ def showAllInsts( cat ) :
     tags:
         instances,display,console
     '''
+    i_c      = cat.ns.info_colour
     allInst  = cat.ns.allInstNames()    # returns a dict
     sortKeys = allInst.keys()
     sortKeys.sort()
     
     for item in sortKeys :
-        cat.output( "\nInstances defined in '%s':" % item, 'green' )
-        cat.output( cat.ns._formatList(allInst[item]), 'green' )
+        cat.output( "\nInstances defined in '%s':" % item, i_c )
+        cat.output( cat.ns._formatList(allInst[item]), i_c )
 
 @define(ns, 'udf')
 def udf( cat ) :
@@ -485,7 +492,7 @@ def udf( cat ) :
         words,user_defined,display
     '''
     keys = cat.ns.allWordNames()
-    cat.output( cat.ns._formatList(keys), 'green' )
+    cat.output( cat.ns._formatList(keys), cat.ns.info_colour )
 
 @define(ns, 'list_files')
 def listDefinitionFiles( cat) :
@@ -523,7 +530,7 @@ def listDefinitionFiles( cat) :
                 funcName = mo.group(1)
                 
                 if funcName in fnmap :
-                    cat.output( "File %s duplicates word %s" % (file, funcName), 'red' )
+                    cat.output( "File %s duplicates word %s" % (file, funcName), cat.ns.config.get('display', 'error') )
                 
                 else :
                     fnmap[funcName] = file
@@ -534,10 +541,11 @@ def listDefinitionFiles( cat) :
     keys.sort()
     maxStr = max( [len(x) for x in keys] ) + 2
     print
+    i_c = cat.ns.info_colour
     
     for key in keys :
         akey = key.rjust(maxStr, " ")
-        cat.output( "    %s -- %s" % (akey, fnmap[key]), 'green' )
+        cat.output( "    %s -- %s" % (akey, fnmap[key]), i_c )
 
 @define(ns, 'whereis')
 def whereis( cat ) :
@@ -618,7 +626,7 @@ def whereis( cat ) :
                 else :
                     source = 'undefined'
     
-    cat.output( "%s: %s" % (theWord, source), 'green' )
+    cat.output( "%s: %s" % (theWord, source), cat.ns.info_colour )
 
 @define(ns, 'help')
 def _help( cat ) :
@@ -634,6 +642,7 @@ def _help( cat ) :
         console,help,display
     '''
     name = cat.stack.pop()
+    i_c  = cat.ns.info_colour
     
     if not isinstance(name, basestring) :
         raise ValueError, "help: Expect a string on the cat.stack"
@@ -666,8 +675,8 @@ def _help( cat ) :
                 help( func )
             
             else :
-                cat.output( func[1], 'green' )   # documentation
-                cat.output( str(func[0]), 'green' )   # definition
+                cat.output( func[1], i_c )   # documentation
+                cat.output( str(func[0]), i_c )   # definition
             
             return
         
@@ -681,12 +690,12 @@ def _help( cat ) :
         fcn = obj[1]
         
         if callable(fcn) :
-            print colored( fcn.__doc__, 'green' )
-            print colored( '\tbuilt-in', 'green' )
+            print colored( fcn.__doc__, i_c )
+            print colored( '\tbuilt-in', i_c )
     
         else :
-            cat.output( fcn[1], 'green' )
-            cat.output( str(fcn[0]), 'green' )
+            cat.output( fcn[1], i_c )
+            cat.output( str(fcn[0]), i_c )
         
         return
         
@@ -1171,6 +1180,148 @@ def append_sys_path( cat ) :
     ix   = path.rindex( "/" )
     path = path[:ix]
     sys.path.append( path )
+
+@define(ns, 'config_get')
+def config( cat ) :
+    '''
+    config_get : (string:section_and_key --> string:key_value)
+    
+    desc:
+        Pushes the value of the key onto the stack.
+        section_and_key: a string of the form <section>:<key>
+        key_value: the value of the key as a string
+    tags:
+        config,configuration,key,value,get
+    '''
+    sect, key = cat.stack.pop().split( ":" )
+    cat.stack.push( cat.ns.config.get(sect, key) )
+
+@define(ns, 'config_get_boolean')
+def config_bool( cat ) :
+    '''
+    config_get_boolean : (string:section_and_key --> boolean:key_value)
+    
+    desc:
+        Pushes the value of the key onto the stack.
+        section_and_key: a string of the form <section>:<key>
+        key_value: the value of the key as a boolean (True or False)
+    tags:
+        config,configuration,key,value,get,boolean
+    '''
+    sect, key = cat.stack.pop().split( ":" )
+    cat.stack.push( cat.ns.config.getboolean(sect, key) )
+
+@define(ns, 'config_get_float')
+def config_float( cat ) :
+    '''
+    config_get_float : (string:section_and_key --> float:key_value)
+    
+    desc:
+        Pushes the value of the key onto the stack.
+        section_and_key: a string of the form <section>:<key>
+        key_value: the value of the key as a float
+    tags:
+        config,configuration,key,value,get,float
+    '''
+    sect, key = cat.stack.pop().split( ":" )
+    cat.stack.push( cat.ns.config.getfloat(sect, key) )
+
+@define(ns, 'config_get_int')
+def config_int( cat ) :
+    '''
+    config_get_int : (string:section_and_key --> int:key_value)
+    
+    desc:
+        Pushes the value of the key onto the stack.
+        section_and_key: a string of the form <section>:<key>
+        key_value: the value of the key as an integer
+    tags:
+        config,configuration,key,value,get,int,integer
+    '''
+    sect, key = cat.stack.pop().split( ":" )
+    cat.stack.push( cat.ns.config.getint(sect, key) )
+
+@define(ns, "config_set")
+def config_set( cat ) :
+    '''
+    config_set : (string:value string:section_and_key -> --)
+    
+    desc:
+        Makes an entry in the configuration dict based on the section and key at [0]
+        and the associated value at [-1]
+        value: the value string
+        section_and_key: a string of the form <section name>:<key name>
+    tags:
+        meta,config,configuration,set,option,key,value
+    '''
+    sect, key = cat.stack.pop().split( ":" )
+    
+    if not cat.ns.config.has_section(sect) :
+        cat.ns.config.add_section( sect )
+    
+    value = str( cat.stack.pop() )
+    cat.ns.config.set( sect, key, value )
+
+@define(ns, 'config_save')
+def config_save( cat ) :
+    '''
+    config_save : (string:filename -> --)
+    
+    desc:
+        Saves the current configuration dictionary as a file.
+        filename: the name of the target file to receive the configuration info
+    tags:
+        config,configuration,save
+    '''
+    fileName = cat.stack.pop()
+    
+    with open(fileName) as fd :
+        cat.ns.config.write( fd )
+
+@define(ns, "config_del_section")
+def config_del_sect( cat ) :
+    '''
+    config_del_section : (string:sect_name -> --)
+    
+    desc:
+        Deletes from the configuration dictionary the section whose name
+        is on top of the stack.
+        sect_name: the name of the section to be deleted
+    tags:
+        config,configuration,delete,section
+    '''
+    name = cat.stack.pop()
+    
+    try :
+        cat.ns.config.remove_section( name )
+    
+    except :
+        raise ValueError, "config_del_section: no section called '%s'" % name
+
+@define(ns, "config_del_key")
+def config_del_key( cat ) :
+    '''
+    config_del_key : (string:sect_and_key -> --)
+    
+    desc:
+        Deletes from the configuration dictionary the section and key whose name
+        is on top of the stack.
+        sect_and_key: the name of the section and key to be deleted. Must be of
+                      the form: <section name>:<key>
+    tags:
+        config,configuration,delete,key,option
+    '''
+    sect, name = cat.stack.pop().split( ":" )
+    
+    try :
+        tf = cat.ns.config.remove_option( sect, name )
+        
+        if not tf :
+            raise ValueError, "config_del_key: No key called '%s'" % name
+    
+    except :
+        raise ValueError, "config_del_key: No section called '%s'" % sect
+
 
 def _returnNS() :
     return ns

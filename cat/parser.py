@@ -227,6 +227,7 @@ class Parser:
 
             elif char == '"':
                 string, expr = self._consume_to(expr, '"', True)
+                string       = string.replace("\\n", '\n').replace("\\r", "\r").replace("\\t","\t")
                 yield string
 
             elif char == "'":

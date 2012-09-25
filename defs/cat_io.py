@@ -199,7 +199,7 @@ def show_path( cat ) :
     name = cat.stack.pop()
     
     if isinstance(name, basestring) :
-        cat.output( path.abspath(name), 'green' )
+        cat.output( path.abspath(name), cat.ns.info_colour )
     
     else :
         raise ValueError, "show_path: File name must be a string"

@@ -161,8 +161,7 @@ def stack_types( cat ) :
     for item in cat.stack.to_list() :
         typeList.append( type(item) )
     
-    cat.output( str(typeList), 'green' )
+    cat.output( str(typeList), cat.ns.info_colour )
 
 def _returnNS() :
     return ns
-

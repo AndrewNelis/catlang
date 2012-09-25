@@ -155,7 +155,7 @@ def showAllNS( cat ) :
     '''
     names = cat.ns.listAllNS()
     names.sort()
-    cat.output( cat.ns._formatList(names), 'green' )
+    cat.output( cat.ns._formatList(names), cat.ns.info_colour )
 
 @define(ns, "show_linked_ns")
 def showNSLinks( cat ) :
@@ -169,7 +169,7 @@ def showNSLinks( cat ) :
     '''
     links = cat.ns.getLinksNS()
     links.sort()
-    cat.output( cat.ns._formatList(links), 'green' )
+    cat.output( cat.ns._formatList(links), cat.ns.info_colour )
 
 @define(ns, 'get_all_ns')
 def getNS( cat ) :
@@ -224,12 +224,13 @@ def wordsInNS( cat ) :
         namespace,console,words,display
     '''
     nsNames = cat.stack.pop_list()
+    i_c     = cat.ns.info_colour
     
     for nsName in nsNames :
         keys = cat.ns.allWordNames( nsName )
         keys.sort()
-        cat.output( "For namespace %s:" % nsName, 'green' )
-        cat.output(cat.ns._formatList(keys), 'green' )
+        cat.output( "For namespace %s:" % nsName, i_c )
+        cat.output(cat.ns._formatList(keys), i_c )
 
 @define(ns, 'links_in_ns')
 def linksInNS( cat ) :
@@ -245,12 +246,13 @@ def linksInNS( cat ) :
         namespace,console,links,display
     '''
     nsNames = cat.stack.pop_list()
+    i_c     = cat.ns.info_colour
     
     for nsName in nsNames :
         keys = cat.ns.getLinksNS( nsName )
         keys.sort()
-        cat.output( "For namespace %s:" % nsName, 'green' )
-        cat.output(cat.ns._formatList(keys), 'green' )
+        cat.output( "For namespace %s:" % nsName, i_c )
+        cat.output(cat.ns._formatList(keys), i_c )
 
 @define(ns, 'show_linked_in_ns,ls')
 def showLinkedNS( cat ) :
@@ -263,10 +265,10 @@ def showLinkedNS( cat ) :
     tags:
         namespace,links,display
     '''
-    cat.output( "Linked namespaces:", 'green' )
+    cat.output( "Linked namespaces:", cat.ns.info_colour )
     links = cat.ns.getLinks()
     links.sort()
-    cat.output( cat.ns._formatList(links), 'green' )
+    cat.output( cat.ns._formatList(links), cat.ns.info_colour )
 
 @define(ns, 'purge_ns')
 def purgeNS( cat ) :
@@ -321,7 +323,7 @@ def showUserNS( cat ) :
     tags:
         namespace,active,user,display
     '''
-    cat.output( "  " + cat.ns.getUserNS(), 'green' )
+    cat.output( "  " + cat.ns.getUserNS(), cat.ns.info_colour )
 
 @define(ns, 'get_user_ns,cwd')
 def getUserNS( cat ) :
