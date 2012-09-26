@@ -18,7 +18,9 @@ class Stack:
         """
         if initial is None:
             initial = []
+        
         self._stack = deque(initial)
+        self._aux   = deque()
 
     def push(self, what, multi=False):
         """
@@ -48,6 +50,23 @@ class Stack:
         """
         return self._stack.pop()
 
+    def push_aux( self, what, multi=False ) :
+        '''
+        '''
+        if multi :
+            self._aux.extend( what )
+        
+        else :
+            self._aux.append( what )
+    
+    def pop_aux( self, n=1 ) :
+        '''
+        '''
+        if n == 1 :
+            return self._aux.pop()
+        
+        return [self._aux.pop() for _ in range(n)]
+ 
     def pop_list(self):
         """
             >>> s = Stack(['a,b,c'])

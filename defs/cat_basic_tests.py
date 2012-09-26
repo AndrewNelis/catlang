@@ -162,6 +162,10 @@ tests = (
     ('clear "bob,alice,frank,princess edna,joe,doreen" "," split', [['bob', 'alice', 'frank', 'princess edna', 'joe', 'doreen']]),
     ('"**" join', ['bob**alice**frank**princess edna**joe**doreen']),
     ('clear "abcdef ghi" "" split', [['a', 'b', 'c', 'd', 'e', 'f', ' ', 'g', 'h', 'i']]),
+    ('clear 1 2 3 ->aux', [1, 2]),
+    ('aux->', [1, 2, 3]),
+    ('3 n->aux', []),
+    ('3 aux->n', [1, 2, 3]),
     ('clear "***end of tests***" "green" writeln', [])
 )
 

@@ -300,6 +300,65 @@ def fetchVar( cat ) :
     else :
         raise KeyError, "@: No variable called " + name
 
+@define(ns, '->aux')
+def push_to_aux( cat ) :
+    '''
+    ->aux : (any:item -> --)
+    
+    desc:
+        Pushes the item onto the auxiliary stack
+        item: the object to be moved to the auxiliary stack
+    tags:
+        custom,auxiliary,stack,push
+    '''
+    cat.stack.push_aux( cat.stack.pop() )
+
+@define(ns, 'aux->')
+def pop_from_aux( cat ) :
+    '''
+    aux-> : (-- -> any:item_from_aux_stack[0])
+    
+    desc:
+        Pushes the item on top of the auxiliary stack onto the regular stack
+        item: the object moved from the auxiliary stack
+    tags:
+        custom,auxiliary,stack,pop
+    '''
+    cat.stack.push( cat.stack.pop_aux() )
+
+@define(ns, 'n->aux')
+def push_n_to_aux( cat ) :
+    '''
+    n->aux : (any:item any:... int:n -> --)
+    
+    desc:
+        Pushes n items onto the auxiliary stack
+        item: the objects to be moved to the auxiliary stack
+        n: number of items below to move to the auxiliary stack
+    tags:
+        custom,auxiliary,stack,push,multi
+    '''
+    n     = cat.stack.pop()
+    items = cat.stack.pop_n( n )
+    cat.stack.push_aux( items, multi=True )
+
+@define(ns, 'aux->n')
+def pop_n_from_aux( cat ) :
+    '''
+    aux->n : (int:n -> any:item_from_aux_stack[0] any:item_from_aux_stack[-1] ...)
+    
+    desc:
+        Pushes the top n items on the auxiliary stack onto the regular stack
+        n: number of items to move from auxiliary stack to the regular stack
+        item_from_aux_stack[0]: an object moved from the auxiliary stack[0]
+        item_from_aux_stack[-1]: an object moved from the auxiliary stack[-1]
+        etc
+    tags:
+        custom,auxiliary,stack,pop
+    '''
+    n = cat.stack.pop()
+    cat.stack.push( cat.stack.pop_aux(n), multi=True )
+
 def _returnNS() :
     return ns
 
