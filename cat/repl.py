@@ -51,6 +51,7 @@ class REPL:
         fileName = self.cat.ns.config.get( 'paths', 'load_file' )
         
         if fileName :
+            self.cat.output( "\nLoading file '%s'\n" % fileName, self.cat.ns.config.get('display', 'info') )
             self.cat.eval( "'" + fileName + " load" )
         
         # main interactive loop
