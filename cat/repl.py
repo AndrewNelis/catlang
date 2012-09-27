@@ -25,14 +25,12 @@ MOTD_COLOR = 'green'
 class REPL:
 
     def __init__(self, cat):
-        self.cat              = cat
-        self._show_stack      = cat.ns.config.getboolean( 'stack', 'show_stack' )
-        self._full_error_info = cat.ns.config.get( 'errors', 'full_error_info' )
+        self.cat = cat
 
     def print_motd(self):
         for line in MOTD:
             self.cat.output(line, MOTD_COLOR)
-
+    
     def run(self):
         self.print_motd()
 
@@ -46,7 +44,7 @@ class REPL:
             e_c = None
             p_c = None
             s_c = None
-
+        
         # load initialization file if any
         fileName = self.cat.ns.config.get( 'paths', 'load_file' )
         
@@ -56,6 +54,9 @@ class REPL:
         
         # main interactive loop
         while True:
+            # check for alternate stack output format (user can 'config_set' this dynamically)
+            alt = self.cat.ns.config.getboolean( 'stack', 'use_alt_format' )
+            
             self.cat.eval('global:prompt')  # because user may have changed the prompt
             prompt = colored( "\n" + self.cat.pop() + " ", p_c )  # Pop is the value of global:prompt
             line   = ''
@@ -82,35 +83,26 @@ class REPL:
                 self.cat.output('')
                 break
 
-            elif line.lower().startswith("showstack"):
-                self._show_stack = line.lower().endswith(('on', 'true', 'yes'))
-
-            elif line.lower().startswith("fullerrorinfo"):
-                if line.lower().endswith(('on', 'true', 'yes')) :
-                    self._full_error_info = 'on'
-                
-                elif line.lower().endswith( 'super' ) :
-                    self._full_error_info = 'super'
-                
-                else :
-                    self._full_error_info = 'off'
-
             else :
                 try:
                     self.cat.eval(line.strip())
     
-                    if self._show_stack:
-                        self.cat.output( str(self.cat), s_c )
+                    if self.cat.ns.config.getboolean( 'stack', 'show_stack' ) :  # 'config_set' can alter
+                        self.cat.output( self.cat.stack.format(alt), s_c )
     
                 except Exception, msg:
-                    # For now, I'd rather see exceptions rather than hide them
+                    # Three response levels:
+                    # super -- full backtrace and kill execution
+                    # on    -- print error message and backtrace and continue
+                    # off   -- print error message and continue
                     self.cat.output(str(msg), e_c)
-                    self.cat.output(str(self.cat), s_c)
+                    self.cat.output( self.cat.stack.format(alt), s_c )
+                    fei = self.cat.ns.config.get( 'errors', 'full_error_info' )  # 'config_set' can alter
                     
-                    if self._full_error_info == 'super' :
+                    if fei == 'super' :
                         raise
                     
-                    elif self._full_error_info == 'on':
+                    elif fei == 'on':
                         for frame in traceback.extract_tb(sys.exc_info()[2]):
                             _, lineno, fn, _ = frame
                             self.cat.output("Error in %s on line %d" % (fn, lineno), e_c)

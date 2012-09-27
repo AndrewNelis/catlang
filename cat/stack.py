@@ -188,3 +188,33 @@ class Stack:
 
     def __setitem__(self, index, value):
         self._stack[index] = value
+
+    def format( self, alt_format=False ) :
+        '''Format the stack contents for printing
+        :param format: choose one line output (default); or multi-line output
+        :type format: boolean
+        :rtype: string
+        '''
+        n  = len( self._stack )
+        ix = 0
+        
+        if not n :
+            return "===> _empty_"
+        
+        elif alt_format :
+            txt = "stack"
+            
+            for i in range( 1, n + 1 ) :
+                if n > 9 :
+                    txt += "[% 3d]: %s\n     " % (ix, str(self._stack[n-i]))
+                
+                else :
+                    txt += "[% 2d]: %s\n     " % (ix, str(self._stack[n-i]))
+                
+                ix  -= 1
+            
+            return txt.strip()
+        
+        else :
+            items = [str(x) for x in self._stack]
+            return "===> " + " ".join(items)

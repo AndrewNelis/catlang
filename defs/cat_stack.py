@@ -313,10 +313,10 @@ def push_to_aux( cat ) :
     '''
     cat.stack.push_aux( cat.stack.pop() )
 
-@define(ns, 'aux->')
+@define(ns, '<-aux')
 def pop_from_aux( cat ) :
     '''
-    aux-> : (-- -> any:item_from_aux_stack[0])
+    <-aux : (-- -> any:item_from_aux_stack[0])
     
     desc:
         Pushes the item on top of the auxiliary stack onto the regular stack
@@ -342,10 +342,10 @@ def push_n_to_aux( cat ) :
     items = cat.stack.pop_n( n )
     cat.stack.push_aux( items, multi=True )
 
-@define(ns, 'aux->n')
+@define(ns, 'n<-aux')
 def pop_n_from_aux( cat ) :
     '''
-    aux->n : (int:n -> any:item_from_aux_stack[0] any:item_from_aux_stack[-1] ...)
+    n<-aux : (int:n -> any:item_from_aux_stack[0] any:item_from_aux_stack[-1] ...)
     
     desc:
         Pushes the top n items on the auxiliary stack onto the regular stack
