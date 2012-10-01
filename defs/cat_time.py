@@ -14,6 +14,8 @@ def now( cat ) :
     desc:
         Pushes a datetime.datetime instance representing the current date and time onto the cat.stack
         dtm: the current date and time as a datetime.datetime instance
+        
+        Example: now => <datetime.datetime instance>
     tags:
         datetime,now
     '''
@@ -28,6 +30,8 @@ def to_msec( cat ) :
         Computes the length of a time span in milliseconds
         dtm: a datetime instance
         msec: the time in milliseconds
+        
+        Example: now to_ms => <a big integer>
     tags:
         datetime,time,millisecond
     '''
@@ -44,6 +48,8 @@ def iso_format( cat ) :
         Returns the ISO formatted date and time string of the datetime on top of the cat.stack
         dtm: the datetime.datetime instance
         iso_date: the date and time in ISO format: yyyy-mm-dd hh:mm:ss (utc_offset)?
+        
+        Example now iso_format => <formatted datetime string>
     tags:
         datetime,iso,format,date
     '''
@@ -57,6 +63,8 @@ def getTimeModule( cat ) :
     
     desc:
         Imports the Python time module
+        
+        Example: time
     tags:
         time,import
     '''

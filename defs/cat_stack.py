@@ -6,11 +6,13 @@ ns = NameSpace()
 @define(ns, 'clear')
 def clear( cat ) :
     '''
-    clear : (A -> - )
+    clear : (A -> --)
     
     desc:
         Removes all stack entries
         A: the stack contents
+        
+        Example: 1 2 3 clear => --
     tags:
         stack,clear
     '''
@@ -19,26 +21,31 @@ def clear( cat ) :
 @define(ns, 'pop,drop')
 def pop( cat ) :
     '''
-    pop : (A any:top_item -> A)
+    pop  : (any:top_item -> --)
+    drop : (any:top_item -> --)
     
     desc:
-        removes the top item from the cat.stack
-        A: contents of stack below the top item [:-1]
+        Removes the top item from the cat.stack
         top_item: the top of the stack [0]
+        
+        Example: 1 2 pop => 1
     tags:
-        stack,pop
+        stack,pop,drop,top
     '''
     cat.stack.pop()
 
 @define(ns, 'popd,under')
 def popd( cat ) :
     '''
-    pop : (any:b any:a -> any:a)
+    popd  : (any:b any:a -> any:a)
+    under : (any:b any:a -> any:a)
     
     desc:
         Removes the item at [-1] on the stack
         b: object at [-]
         a: object at [0]
+        
+        Example: 'a 'b popd => 'b
     tags:
         stack,pop,under
     '''
@@ -53,6 +60,8 @@ def dup( cat ) :
     desc:
         Duplicate the top item on the stack
         a: object on top of the stack [0]
+        
+        Example: 'x dup => 'x 'x
     tags:
         stack,duplicate,dup
     '''
@@ -67,6 +76,8 @@ def swap( cat ) :
         Swap the top two items on the stack
         a: object originally on stack at position [-1]
         b: object originally on stack at position [0]
+        
+        Example: 1 2 swap => 2 1
     tags:
         stack,swap
     '''
@@ -79,10 +90,12 @@ def flip( cat ) :
     flip : (any:a any:b any:c -> any:c any:b any:a)
     
     desc:
-        Swaps the elements on the stack at positions [0] and [-2]
+        Swaps the elements on the stack at positions [0] and [-2] of the stack
         a: object on stack at original position [-2]
         b: object on stack at position [-1]
         c: object on stack at original position [0]
+        
+        Example: 1 2 3 flip => 3 2 1
     tags:
         stack,flip
     '''
@@ -95,10 +108,13 @@ def swapd( cat ):
     swapd : (any:c any:b any:a -> any:b any:c any:a)
     
     desc:
-        Swap the items at [-1] and [-2]
+        Swap the items at [-1] and [-2] of the stack
         a: object at stack position [0]
         b: object originally at stack position [-1]
         c: object originally at stack position [-2]
+        Note: same action as: [swap] dip
+        
+        Example: 1 2 3 swapd => 2 1 3
     tags:
         stack,swap
     '''
@@ -111,9 +127,12 @@ def dupd( cat ) :
     dupd : (any:b any:a -> any:b any:b any:a)
     
     desc:
-        Duplicates the item at [-1] leaving item at [0] on top of the cat.stack
+        Duplicates the item at [-1] leaving item at [0] on top of the stack
         a: object at stack position [0]
         b: object originally at stack position [-1]
+        Note: same action as: [dup] dip
+        
+        Example: 1 2 dupd => 1 1 2
     tags:
         stack,duplicate,dup
     '''
@@ -126,10 +145,13 @@ def size( cat ) :
     size: (A -> A int:size)
     
     desc:
-        Pushes the size of the cat.stack (i.e. number of items in the cat.stack)
-        onto the top of the cat.stack
+        Pushes the size of the stack (i.e. number of items in the stack)
+        onto the top of the stack
         A: the full stack contents
         size: number of items in the stack
+        
+        Example: 1 2 3 size        => 1 2 3 3
+                 [1 2 3] list size => [1, 2, 3] 1
     tags:
         lists,stack,size,length
     '''
@@ -138,7 +160,8 @@ def size( cat ) :
 @define(ns, '+rot,rot_up')
 def rot_up( cat ) :
     '''
-    +rot : (any:a any:b any:c -> any:c any:a any:b)
+    +rot    : (any:a any:b any:c -> any:c any:a any:b)
+    +rot_up : (any:a any:b any:c -> any:c any:a any:b)
     
     desc:
         Rotates the top three elements upward one position circularly:
@@ -146,6 +169,8 @@ def rot_up( cat ) :
         a: item originally at stack position [-2]
         b: item originally at stack position [-1]
         c: item originally at stack position [0]
+        
+        Example: 1 2 3 +rot => 3 1 2
     tags:
         stack,rotate
     '''
@@ -158,7 +183,8 @@ def rot_up( cat ) :
 @define(ns, '-rot,rot_down')
 def rot_down( cat ) :
     '''
-    -rot : (any:a any:b any:c -> any:b any:c any:a)
+    -rot     : (any:a any:b any:c -> any:b any:c any:a)
+    rot_down : (any:a any:b any:c -> any:b any:c any:a)
     
     desc:
         Rotates the top three elements downward one position circularly
@@ -166,6 +192,8 @@ def rot_down( cat ) :
         a: item originally at stack position [-2]
         b: item originally at stack position [-1]
         c: item originally at stack position [0]
+        
+        Example: 1 2 3 -rot => 2 3 1
     tags:
         stack,rotate
     '''
@@ -178,12 +206,16 @@ def rot_down( cat ) :
 @define(ns, 'eval,apply')
 def _eval( cat ) :
     '''
-    eval : ( func:exec_func -> any:ans )
+    eval  : ( function:exec_func -> any:ans )
+    apply : ( function:exec_func -> any:ans )
     
     desc:
         Applies a function to the stack (i.e. executes an instruction)
-        exec_func: gthe function to evaluate
+        exec_func: the function to evaluate
         ans: the result of the evaluation
+        
+        Example: 2 [inc dup] apply   => 3 3
+                 2 3 [add 2 **] eval => 25
     tags:
         functions,eval,apply
     '''
@@ -192,7 +224,7 @@ def _eval( cat ) :
 @define(ns, 'dip')
 def dip( cat ) :
     '''
-    dip: (any:arg any:saved func:exec_func -> any:result any:saved)
+    dip: (any:arg any:saved function:exec_func -> any:result any:saved)
     
     desc:
         Evaluates a function, temporarily removing the item below the function 'exec_func'.
@@ -202,6 +234,8 @@ def dip( cat ) :
         saved: the item to be saved (removed and then replaced after function execution)
         exec_func: the function to be executed
         result: the result, if any, of executing the function
+        
+        Example: 2 42 [3 * dec] dip => 5 42
     tags:
         functions,dip
     '''
@@ -213,12 +247,14 @@ def dip( cat ) :
 @define(ns, 'quote')
 def quote( cat ) :
     '''
-    quote: (any:obj -> func:quoted)
+    quote: (any:obj -> function:quoted)
     
     desc:
         Creates a constant generating function from the top value on the stack
         obj: object to be 'quoted'
         quoted: a pseudo-function that generates the value represented by obj
+        
+        Example: 3.14159 quote 'pi ! => --
     tags:
         functions,quote,generator
     '''
@@ -228,7 +264,7 @@ def quote( cat ) :
 @define(ns, 'compose')
 def compose( cat ) :
     '''
-    compose: (func:left func:right -> func:composite)
+    compose: (function:left function:right -> function:composite)
     
     desc:
         Creates a function by composing (concatenating) two existing functions
@@ -236,6 +272,8 @@ def compose( cat ) :
         right: the function that executes first operating on the stack and producing output
                 for the 'left' function
         composite: a function (lambda) object that is the composition of the 'left' and 'right' functions
+        
+        Example: [dup inc] [swap] compose
     tags:
         functions,compose
     '''
@@ -245,14 +283,15 @@ def compose( cat ) :
 @define(ns, 'papply')
 def papply( cat ) :
     '''
-    papply : (any:arg func:exec_func -> func:partial)
+    papply : (any:arg function:exec_func -> function:partial)
     
     desc:
         Partial application: binds the top argument to the top value in the stack
-        E.g. 1 [<=] papply -> [1 <=]
         arg:  the argument to be bound with the 'exec_func'
         exec_func: function to apply after the arg
         partial: the resulting composition
+        
+        Example: 1 [<=] papply => [1 <=]
     tags:
         functions,papply
     '''
@@ -264,14 +303,17 @@ def papply( cat ) :
 @define(ns, '!,save_var')
 def saveVar( cat ) :
     '''
-    ! : (any:obj string:userVarName -> )
+    !        : (any:obj string:userVarName -> )
+    save_var : (any:obj string:userVarName -> )
     
     desc:
         Saves the value at [-1] to the user symbol table with the name
-          provided by the string at [0]. Variable names may NOT duplicate any
-          defined words (built-in or user-defined)
+        provided by the string at [0]. Variable names may NOT duplicate any
+        defined words (built-in or user-defined)
         obj: the object to be saved
         userVarName: the name under which the object will be found
+        
+        Example: 3.14159265 'pi !
     tags:
         variables,user
     '''
@@ -281,13 +323,17 @@ def saveVar( cat ) :
 @define(ns, '@,get_var')
 def fetchVar( cat ) :
     '''
-    @ : (string:userVarName -> any:val)
+    @       : (string:userVarName -> any:val)
+    get_var : (string:userVarName -> any:val)
     
     desc:
         Pushes the value of the named user-variable onto the stack
         Note: the userVarName by itself (no quotes or @) will push its value onto the stack
         userVarName: the name under which the object has been stored
         val: the object
+        
+        Example: pi ! => 3.14159265
+                 pi   => 3.14159265
     tags:
         custom,variables,user
     '''
@@ -308,6 +354,8 @@ def push_to_aux( cat ) :
     desc:
         Pushes the item onto the auxiliary stack
         item: the object to be moved to the auxiliary stack
+        
+        Example: 42 ->aux
     tags:
         custom,auxiliary,stack,push
     '''
@@ -321,6 +369,8 @@ def pop_from_aux( cat ) :
     desc:
         Pushes the item on top of the auxiliary stack onto the regular stack
         item: the object moved from the auxiliary stack
+        
+        Example: <-aux => 42
     tags:
         custom,auxiliary,stack,pop
     '''
@@ -335,6 +385,8 @@ def push_n_to_aux( cat ) :
         Pushes n items onto the auxiliary stack
         item: the objects to be moved to the auxiliary stack
         n: number of items below to move to the auxiliary stack
+        
+        Example 1 2 3 2 n->aux => 1
     tags:
         custom,auxiliary,stack,push,multi
     '''
@@ -353,6 +405,8 @@ def pop_n_from_aux( cat ) :
         item_from_aux_stack[0]: an object moved from the auxiliary stack[0]
         item_from_aux_stack[-1]: an object moved from the auxiliary stack[-1]
         etc
+        
+        Example 2 n<-aux => 2 3
     tags:
         custom,auxiliary,stack,pop
     '''

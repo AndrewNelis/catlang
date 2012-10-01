@@ -13,7 +13,7 @@ def createNS( cat ) :
         Note: name may also be of the form name1,name2,name3,... (e.g. 'flow,test)
               or a list  (e.g. ['flow 'test] list
     tags:
-        namespace,create,new
+        namespace,create,new,ns
     '''
     names = cat.stack.pop_list()
     
@@ -39,7 +39,7 @@ def setNS( cat ) :
               or a list (e.g. ['predicates 'flow] list)
         ns: the namespace or list of namespaces to be used
     tags:
-        namespaces,set,list
+        namespaces,set,list,ns
     '''
     names  = cat.stack.pop_list()
     userNS = cat.ns.getUserNS()
@@ -64,7 +64,7 @@ def renameNS( cat ) :
         old: the current name of some namespace
         new: the new name for the namespace
     tags:
-        namespaces,rename,mv
+        namespaces,rename,mv,ns
     '''
     new, old  = cat.stack.pop_2()
     protected = ['std', 'user']
@@ -84,7 +84,7 @@ def copyNS( cat ) :
         src: the name of an existing (source) namespace
         dest: the name of an existing (target) namespace
     tags:
-        namespace,copy
+        namespace,copy,ns
     '''
     dest, src = cat.stack.pop_2()
     
@@ -106,7 +106,7 @@ def appendNS( cat ) :
         src: the name of an existing (source) namespace
         dest: the name of an existing (target) namespace
     tags:
-        namespace,append
+        namespace,append,ns
     '''
     dest, src = cat.stack.pop_2()
     
@@ -125,16 +125,20 @@ def appendNS( cat ) :
 def delNS( cat ) :
     '''
     del_ns : (string:name -> --)
+    rm     : (string:name -> --)
     
     desc:
         Removes the named namespace dictionary
         names may be a string of the form:
             <simple name>
             <simple name>,<simple name>,...
-        or a list of names: (<simple name>, <simple name>, ...)
+        or a list of names: [<simple name>, <simple name>, ...)
         name: the name(s) of namespace(s) to be deleted
+        
+        Example: 'TS del_ns
+                 ['Test, 'TS] list rm
     tags:
-        namespace,delete
+        namespace,delete,ns,rm
     '''
     names = cat.stack.pop_list()
     
@@ -150,8 +154,10 @@ def showAllNS( cat ) :
     
     desc:
         Shows the names of ALL the available namespaces
+        
+        Example: show_all_ns
     tags:
-        namespace,names,display
+        namespace,names,display,ns,show
     '''
     names = cat.ns.listAllNS()
     names.sort()
@@ -164,8 +170,10 @@ def showNSLinks( cat ) :
     
     desc:
         Displays all namespace links in the currently active namespace
+        
+        Example: show_linked_ns
     tags:
-        namespaces,links,display
+        namespace,link,display,ns
     '''
     links = cat.ns.getLinksNS()
     links.sort()
@@ -179,8 +187,10 @@ def getNS( cat ) :
     desc:
         Pushes a list of the names of the available namespaces onto the stack
         names: the list of namespace names
+        
+        Example: get_all_ns => ['user, 'TS]
     tags:
-        namespace,names,list
+        namespace,names,list,ns
     '''
     names = cat.ns.listAllNS()
     names.sort()
@@ -196,9 +206,11 @@ def loadNS( cat ) :
         If the namespace does not exist it is created
         If the namespace exists it is added to
         fileName: the path to the file of cat definitions to be loaded
-        namespaceName: the name of the namespace into  which to load the defintions
+        namespaceName: the name of the namespace into  which to load the definitions
+        
+        Example: global:CatDefs 'standard-core.cat + 'core load_ns
     tags:
-        namespaces,definitions,cat
+        namespace,definition,cat,ns,load
     '''
     nsName          = cat.stack.pop()
     cat.ns.targetNS = nsName
@@ -220,8 +232,10 @@ def wordsInNS( cat ) :
         Note: namespace name may be of the form: nsName1,nsName2,...  (e.g. 'test,flow)
               or a list  (e.g. ['test 'flow] list)
         nsname: name of namespace whose words are to be displayed
+        
+        Example: 'TS words_in_ns
     tags:
-        namespace,console,words,display
+        namespace,console,words,display,ns
     '''
     nsNames = cat.stack.pop_list()
     i_c     = cat.ns.info_colour
@@ -230,7 +244,7 @@ def wordsInNS( cat ) :
         keys = cat.ns.allWordNames( nsName )
         keys.sort()
         cat.output( "For namespace %s:" % nsName, i_c )
-        cat.output(cat.ns._formatList(keys), i_c )
+        cat.output(cat.ns._formatList(keys, across=4), i_c )
 
 @define(ns, 'links_in_ns')
 def linksInNS( cat ) :
@@ -242,8 +256,10 @@ def linksInNS( cat ) :
         Note: namespace name may be of the form: nsName1,nsName2,...  (e.g. 'test,flow)
               or a list  (e.g. ['test 'flow] list)
         nsname: name of namespace whose links are to be displayed
+        
+        Example 'user,TS links_in_ns
     tags:
-        namespace,console,links,display
+        namespace,console,link,display,ns
     '''
     nsNames = cat.stack.pop_list()
     i_c     = cat.ns.info_colour
@@ -262,8 +278,11 @@ def showLinkedNS( cat ) :
     
     desc:
         lists all the active namespaces (those linked to the user's current namespace)
+        
+        Example: show_linked_in_ns
+                 ls
     tags:
-        namespace,links,display
+        namespace,link,display,ns,ls
     '''
     cat.output( "Linked namespaces:", cat.ns.info_colour )
     links = cat.ns.getLinks()
@@ -280,8 +299,10 @@ def purgeNS( cat ) :
         Note: nsNames may be of the form nsName1,nsName2,nsName3,...  (e.g. 'geometry,flow)
               or a list (e.g. ['geometry 'flow])
         nsNames: the name(s) of the namespaces to be purged of their words
+        
+        Example: 'TS purge_ns
     tags:
-        namespace,purge,words,delete
+        namespace,purge,words,delete,ns
     '''
     items = stack.pop_list()
     
@@ -299,8 +320,11 @@ def focusNS( cat ) :
         Changes the working (active) namespace to the one given by
         the string on top of the stack
         name: the name of a namespace that will become the currently active one
+        
+        Example: 'TS focus_ns
+                 'user cd
     tags:
-        namespace,focus,user
+        namespace,focus,user,ns,cd
     '''
     name = cat.stack.pop()
     
@@ -320,8 +344,11 @@ def showUserNS( cat ) :
     
     desc:
         Displays the current user namespace
+        
+        Example: show_user_ns
+                 pwd
     tags:
-        namespace,active,user,display
+        namespace,active,user,display,ns,pwd
     '''
     cat.output( "  " + cat.ns.getUserNS(), cat.ns.info_colour )
 
@@ -334,8 +361,11 @@ def getUserNS( cat ) :
     desc:
         Pushes the name of the currently active namespace onto the stack
         namespace: the name of the currently ative namespace
+        
+        Example: get_user_ns => 'user
+                 cdw         => 'work_2
     tags:
-        namespace,user,active
+        namespace,user,active,ns,cwd
     '''
     cat.stack.push( cat.ns.getUserNS() )
 
@@ -350,8 +380,11 @@ def linkToNS( cat ) :
         Note: name may be of the form: nsName1,nsName2,...  (e.g. 'math,geometry)
               or a list (e.g. ['math 'shuffle] list)
         namespaceName: the name of the namespace to be appended to currently active one
+        
+        Example: 'TS ln
+                 'work_1,work_2 link_to_ns
     tags:
-        namespace,append,link
+        namespace,append,link,ns,ln
     '''
     names  = cat.stack.pop_list()
     userNS = cat.ns.getUserNS()
@@ -369,13 +402,16 @@ def unlinkNS( cat ) :
     rm        : (string:name -> --)
     
     desc:
-        removes the namespace whose name is on top of the stack
+        Removes the namespace whose name is on top of the stack
         from the list of namespaces associated with the
         currently active user namespace. The name may be of the form
         'name1,name2,... or a list of names
         name: the name(s) of namespace(s) to be unlinked from the currently active one
+        
+        Example: 'work_1,work_2 unlink_ns
+                 'TS rm
     tags:
-        namespace,remove,unlink
+        namespace,remove,unlink,ns,rm
     '''
     names  = cat.stack.pop_list()
     userNS = cat.ns.getUserNS()
@@ -403,8 +439,10 @@ def removeWordNS( cat ) :
               or a list  (e.g. ['dupd 'swapd] list)
         word: the name of the word to be removed
         namespace: the name of the namespace from which the word is to be removed
+        
+        Example: 'swons,dip2 'TS remove_word
     tags:
-        namespace,word,remove,delete
+        namespace,word,remove,delete,ns
     '''
     ns    = cat.stack.pop()
     names = cat.stack.pop_list()
@@ -425,8 +463,10 @@ def purgeLinksNS( cat ) :
     
     desc:
         Removes all links from the active user namespace
+        
+        Example: purge_linked_ns
     tags:
-        namespace,purge,links
+        namespace,purge,link,ns
     '''
     cat.ns.delAllLinks()
 

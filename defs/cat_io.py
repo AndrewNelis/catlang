@@ -1,9 +1,9 @@
 # input/output
 
-# Help on function colored in module termcolor:
+# Help on function 'colored' in module 'termcolor':
 # 
 # colored(text, color=None, on_color=None, attrs=None)
-#     Colorize text.
+#     Colorize text. (Not all colors work on all terminals on all platforms.)
 #     
 #     Available text colors:
 #         red, green, yellow, blue, magenta, cyan, white.
@@ -39,8 +39,10 @@ def write( cat ) :
                 'white'
                 'yellow'
               If the color string is empty (i.e. "") then 'black' is assumed
+        
+        Example: "Two letter country code: " 'magenta write
     tags:
-        console,text,color,output
+        console,text,color,output,write,prompt
     '''
     color, obj = cat.stack.pop_2()
     
@@ -69,7 +71,7 @@ def writeln( cat ) :
     print   : (string:text string:color -> --)
     
     desc:
-        outputs the text representation of a value to the console in the
+        Outputs the text representation of a value to the console in the
         requested color. The line is automatically terminated with a linefeed
         text: the text to output
         color: the color to use:
@@ -82,6 +84,9 @@ def writeln( cat ) :
                 'white'
                 'yellow'
               If the color string is empty (i.e. "") then 'black' is assumed
+        
+        Example: "Hello, world!" 'cyan writeln
+                 "Hello, dolly!" 'grey print
     tags:
         console,display,text,color,output
     '''
@@ -108,13 +113,15 @@ def writeln( cat ) :
 @define(ns, 'readln')
 def readln( cat ) :
     '''
-    readln : ( -> string:input_line)
+    readln : (-> string:input_line)
     
     desc:
-        inputs a string from the console
+        Inputs a string from the console
         no conversion of any sort is done
         for a prompt, use write first e.g. "date: " write readln
         input_line: the string received from the user
+        
+        Example: "Two letter country code: " 'magenta write readln => <user's response>
     tags:
         console,input,user
     '''
@@ -127,11 +134,13 @@ def file_reader( cat ) :
     file_reader : (string:filePath -> file_descriptor:istream)
     
     desc:
-        creates an input stream from a file name
+        Creates an input stream from a file name
         filePath: the file path to the input file
         istream: file descriptor for the input file
+        
+        Example: 'catlang.cfg file_reader => <file descriptor>
     tags:
-        streams,input,file
+        streams,input,file,descriptor
     '''
     fName = cat.stack.pop()
     
@@ -150,8 +159,10 @@ def file_writer( cat ) :
         creates an output stream from a file name
         filePath: the file path to the target file (for output)
         ostream: file descriptor for the file
+        
+        Example: 'work.txt file_writer => <file descriptor>
     tags:
-        streams,output,file
+        streams,output,file,write
     '''
     fName = cat.stack.pop()
     
@@ -170,6 +181,8 @@ def file_exists( cat ) :
         Returns a boolean value indicating whether a file or directory exists
         filePath: the path to the file
         TF: True if the file exists, False otherwise
+        
+        Example: 'Cat/catlang.cfg file_exists => True
     tags:
         streams,file,exist
     '''
@@ -191,6 +204,8 @@ def show_path( cat ) :
     desc:
         Displays the absolute path to the file
         fileName: the file name
+        
+        Example: 'Cat/catlang.cfg show_path
     tags:
         streams,file,path,display
     '''
@@ -212,6 +227,8 @@ def get_path( cat ) :
     desc:
         Returns the absolute path to the file on top of the stack
         fileName: the file name
+        
+        Example: 'Cat/catlang.cfg get_path => /WW/Projects/TimeStack/Cat/catlang.cfg
     tags:
         streams,file,path
     '''
@@ -231,11 +248,13 @@ def read_bytes( cat ) :
     read_bytes : (int:nr_bytes file_descriptor:istream -> string:bytes)
     
     desc:
-        reads a number of bytes into a string from an input stream
+        Reads a number of bytes into a string from an input stream
         nr_bytes: number of bytes to read.
                   If < 0, all bytes in the file will be read
         istream:  input file descriptor
         bytes: the bytes read in
+        
+        Example: 23 fd read_bytes => <string of 23 bytes>
     tags:
         streams,string,input,file,bytes,read
     '''
@@ -249,9 +268,11 @@ def write_bytes( cat ) :
     write_bytes : (string:bytes file_descriptor:ostream -> ostream)
     
     desc:
-        writes a string (byte array) to an output stream
+        Writes a string (byte array) to an output stream
         ostream: output file descriptor
         bytes: string to be output
+        
+        Example: "this is output text\n" fd write_bytes => fd
     tags:
         streams,string,output,file
     '''
@@ -266,8 +287,10 @@ def close_stream( cat ) :
     close_stream : (file_descriptor: stream -> )
     
     desc:
-        closes a stream
+        Closes a stream
         stream: a file descriptor
+        
+        Example: fd close_stream
     tags:
         streams,input,output,close
     '''
@@ -290,6 +313,8 @@ def isFileClosed( cat ) :
         stack if the file has been closed; False otherwise
         fd: file descriptor for the file to be tested
         TF: True or False
+        
+        Example: fd is_closed => <True or False>
     tags:
         streams,close,file,input,output
     '''
@@ -303,10 +328,12 @@ def fileToList( cat ) :
     
     desc:
         Read the entire contents of a file to a list
-        Records terminated by line end character(s) are expected
+        Records terminated by line-end character(s) are expected
         The file is NOT closed
         fd: the file descriptor of the file to read
         records: the records read as strings with terminal newline included
+        
+        Example: fd file_to_list => <list of records>
     tags:
         streams,input,read,list
     '''
@@ -320,11 +347,13 @@ def listToFile( cat ) :
     
     desc:
         Writes the contents of the list to the output file
-        Each element of the list is contiguously to the file
+        Each element of the list is appended to the file
         If a list element is to be a 'record' it must be terminated with a newline
         The output file is NOT closed
         src: the list to be output
         fd: the file descriptor for the output file
+        
+        Example: ["item 1" "item 2"] list fd list_to_file => fd
     tags:
         streams,output,write,list
     '''
@@ -343,12 +372,14 @@ def recordsToFile( cat ) :
     records_to_file : (list:src file_descriptor:fd -> file_descriptor:fd)
     
     desc:
-        writes each element of the list to the output file as a string
+        Writes each element of the list to the output file as a string
         terminated by a newline. If the string has no terminal newline, one is
         appended before writing it to the output file.
         The output file is NOT closed
         src: the list of records to be written to the file
         fd: the output file descriptor
+        
+        Example: ["record 1" "record 2"] list fd records_to_file => fd
     tags:
         streams,output,write,list
     '''
@@ -371,7 +402,7 @@ def recordsToFile( cat ) :
     fd.flush()
     cat.stack.push( fd )
 
-# much more i/o and file stuff through "'os.path import"
+# much more i/o and file stuff available through: 'os.path import
 
 def _returnNS() :
     return ns

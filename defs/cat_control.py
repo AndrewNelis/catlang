@@ -7,7 +7,7 @@ ns = NameSpace()
 @define(ns, 'if')
 def _if( cat ) :
     '''
-    if : (bool:condition [true_func] [false_func] -> any:ans)
+    if : (bool:condition function:true_func function:false_func -> any:ans)
     
     desc:
         Executes one predicate or another whether the condition is true
@@ -15,6 +15,8 @@ def _if( cat ) :
         true_func: the function to be executed if the condition is True
         false_func: the function to be executed if the condition is False
         ans: the result of the functions (may be no value pushed onto the stack)
+        
+        Example: 3 eqz ['ERROR 'red writeln] ['OK 'green writeln] if
     tags:
         control,function,condition,if
     '''
@@ -31,14 +33,15 @@ def _if( cat ) :
 @define(ns, 'while')
 def _while( cat ) :
     '''
-    while : (func:exec_func func:test_cond -> any:ans)
+    while : (function:exec_func function:test_cond -> any:ans)
     
     desc:
-        executes a block of code (function) repeatedly until the condition returns false
-        Example:  0 4 [swap inc swap] [dec gez] while -> 4 -1
+        Executes a block of code (function) repeatedly until the condition returns false
         exec_func: the function to execute repeatedly
         test_cond: the test condition
         ans: the result of executing the exec_func (may result in nothing pushed onto the stack)
+        
+        Example:  0 4 [[inc] dip] [dec dup gez] while pop -> 4
     tags:
         control,iteration,while
     '''
@@ -56,11 +59,10 @@ def _while( cat ) :
 @define(ns, 'repeat')
 def repeat( cat ) :
     '''
-    repeat : (func:exec_func int:n -> any:ans)
+    repeat : (function:exec_func int:n -> any:ans)
 
     desc:
         Executes a loop a fixed number of times
-        Semantics: $A [$B] $c repeat == $A $c eqz [] [$B $c dec] if
         exec_func: the function to be repeated
         n: number of times to repeat the function
         ans: the result of executing exec_func (may have no staak effect)
@@ -92,11 +94,12 @@ def repeat( cat ) :
 @define(ns, 'foreach,for_each,for')
 def foreach( cat ) :
     '''
-    foreach : (list:args func:exec_func -> any:ans)
+    foreach  : (list:args function:exec_func -> any:ans)
+    for_each : (list:args function:exec_func -> any:ans)
+    for      : (list:args function:exec_func -> any:ans)
 
     desc:
         Executes a function with each item in the list, and consumes the list.
-        Semantics: $A $b [$C] foreach == $A $b empty not [uncons pop [$C] foreach] [pop] if }
         args: a list of arguments
         exec_func: the function to be applied to each element of the argument list
         ans: result of the exec_func (may be no stack effect)
@@ -105,7 +108,6 @@ def foreach( cat ) :
             0 [1 2 3 4] list [add] foreach
         out:
             10
-    
     tags:
         control,iteration,for
     '''
@@ -123,6 +125,7 @@ def _pass( cat ) :
     desc:
         Does nothing (no-op)
     
+        Example: pass
     tags:
         control
     '''
@@ -136,6 +139,8 @@ def halt( cat ) :
     desc:
         Halts the program with an error code by raising an exception
         error_code: an arbitrary integer error code
+        
+        Example: 3 halt
     tags:
         control,exception,halt
     '''
@@ -148,11 +153,12 @@ def dispatch1( cat ) :
     dispatch1 : (list:functions any:arg -> any:ans)
     
     desc:
-        dynamically dispatches a function depending on the object on top of the stack
-        E.g. (3 [[dup] 1 [drop] 2 [swap] 3] list 1 dispatch1 -> 3 3)
+        Dynamically dispatches a function depending on the object on top of the stack
         functions: the list of "indexed" functions to be executed
         arg: the selector "index"
         ans: the result of executing the function associated with the selector arg
+        
+        Example: 3 [[dup] 1 [drop] 2 [swap] 3] list 1 dispatch1 => 3 3
     tags:
         control,functions,dispatch
     '''
@@ -174,11 +180,12 @@ def dispatch2( cat ) :
     dispatch2 : (list:functions any:arg -> any:ans)
     
     desc:
-        dynamically dispatches a function depending on the object on top of the stack
-        E.g. (3 [1 [dup] 2 [drop] 3 [swap]] list 1 dispatch2 -> 3 3)
+        Dynamically dispatches a function depending on the object on top of the stack
         functions: the list of "indexed" functions to be executed
         arg: the selector "index"
         ans: the result of executing the function associated with the selector arg
+        
+        Example: 3 [1 [dup] 2 [drop] 3 [swap]] list 1 dispatch2 -> 3 3
     tags:
         control,functions
     '''
@@ -197,12 +204,14 @@ def dispatch2( cat ) :
 @define(ns, 'try_catch')
 def try_catch( cat ) :
     '''
-    "try_catch : (func:try_func func:catch_action -> --)
+    "try_catch : (function:try_func function:catch_action -> --)
     
     desc:
-        evaluates a function, and catches any exceptions and executes the catch function
+        Evaluates a function, and catches any exceptions and executes the catch function
         try_func: the function to be executed
         catch_func: the function executed if try_func raises and exception
+        
+        Example: -2 [math.sqrt] ["Square root error" 'red writeln] try_catch
     tags:
         control,exception,try,catch
     '''
@@ -224,6 +233,9 @@ def _raise( cat ) :
     desc:
         Raises a standard Python exception
         message: the user-defined message related to the exception
+        
+        Example: "Terrible error" raise
+                 "Even worse error" throw
     tags:
         control,exception,raise
     '''

@@ -9,10 +9,14 @@ def split( cat ) :
     split : (string:target string:splitter -> list)
     
     desc:
-        Dplits a target string into segments based on the 'splitter' string
+        Splits a target string into segments based on the 'splitter' string
         target: the string to be split apart
         splitter: the string to be used to split the target. Note: the splitter
                     value "" (empty string) will split apart letters of a string
+        
+        Example: 'abcd "" split             => ['a, 'b, 'c, 'd]
+                 "one if by land" " " split => ['one, 'if, 'by, 'land]
+                 "tag1,tag2,tag3" ', split  => ['tag1, 'tag2, 'tag3]
     tags:
         string,split,list
     '''
@@ -37,6 +41,8 @@ def join( cat ) :
         string at [0].
         src: the list of values
         connector: the connector used to 'glue' the values together as a string
+        
+        Example: ['one 'if 'by 'land] list " " join => "one if by land"
     tags:
         string,list,join
     '''
@@ -61,6 +67,8 @@ def count_str( cat ) :
         found in the target string at [-1]
         target: the string to be searched
         test: the test string
+        
+        Example: "Hey nonny, nonny, ho" 'nonny count_str => 2
     tags:
         string,count
     '''
@@ -79,13 +87,13 @@ def subseq( cat ) :
     
     desc:
         Pushes a segment of a list or a string onto the stack
-        start is the starting offset into the list or string
-        end is the ending offset (i.e. the up-to index)
-        the usual Python rules for slicing a list or string apply
         src: the list or string to be sliced
         start: the starting offset
         end: the end barrier
         result: the extracted sublist or substring
+        
+        Example: [1 2 3 4 5] list 2 5 subseq => [1, 2, 3, 4, 5] [3, 4, 5]
+                 "Bovril prevents that sinking feeling" 7 15 subseq => "Bovril prevents that sinking feeling" 'prevents
     tags:
         list,string,slice,subsequence
     '''
@@ -93,15 +101,18 @@ def subseq( cat ) :
     lst        = cat.stack.peek()
     cat.stack.push( lst[int(start) : int(end)] )
 
-@define(ns, 'to_str')
+@define(ns, 'to_str,as_string')
 def to_str( cat ) :
     '''
     to_str : (any:obj -> string:str)
     
     desc:
-        Coerces any value to a string
+        Coerces any value to a string if possible
         obj: the object to be "stringified"
         str: the resulting string
+        
+        Example: 123 to_str             => "123"
+                 [1 2 3] list as_string => "[1, 2, 3]"
     tags:
         conversion,string
     '''
@@ -113,9 +124,11 @@ def bin_str( cat ) :
     bin_str : (int:nbr -> string:ans)
   
     desc:
-        converts an integer into its binary string representation.
+        Converts an integer into its binary string representation.
         int: the number to convert
         ans: the string representation in binary of the number
+        
+        Example: 123 bin_str => '0b1111011
     tags:
         string,mathematics,conversion,binary,number
     '''
@@ -133,6 +146,8 @@ def format( cat ) :
         args: a list of formattable values
         format: the format string
         ans: the formatted string
+        
+        Example: [1 3.14 'xx] list "int=%d, float=%f, string=%s" format => "int=1, float=3.140000, string=xx"
     tags:
         string,format,conversion
     '''
@@ -156,6 +171,8 @@ def hex_str( cat ) :
         val: the number to be "hexified"
         str: the resulting string representing the value of the number
              in hexadecimal notation
+        
+        Example: 123 hex_str => '0x7b
     tags:
         string,mathematics,conversion,hexadecimal,hex
     '''
@@ -171,6 +188,8 @@ def new_str( cat ) :
         src: the string to be replicated
         n: number of replications
         new_str: the resulting string
+        
+        Example: "xY" 3 new_str => 'xYxYxY
     tags:
         string
     '''
@@ -184,12 +203,17 @@ def index_of( cat ) :
     index_of : (string:target string:test -> int:index)
     
     desc:
-        Returns the index of the starting position of a test string in a target string
-        or the index of the test object in a list. Returns -1 if not found.
+        Returns the zero-based index of the starting position of a test string in
+        a target string or the index of the test object in a list.
+        Returns -1 if not found.
         target: the string to be searched
         test: the search string
         index: the offset into the target string where the test string starts
                 (-1 => failure)
+        
+        Example: "Bovril prevents that sinking feeling" 'prevents index_of => 7
+                 ['a 'b 'c 'd] list 'c index_of                            => 2
+                 ['a 'b 'c 'd] list 'q index_of                            => -1
     tags:
         string,search,index_of,index,find,substring
     '''
@@ -218,6 +242,10 @@ def rindex_of( cat ) :
         test: the search string
         index: the offset into the string or list where the test object is to be
                found (-1 => failure)
+        
+        Example: "Oh what is that that you are reading?" 'that rindex_of           => 16
+                 "Oh what is that that you are reading?" " " split 'that rindex_of => 4
+                 "Oh what is that that you are reading?" 'thet rindex_of           => -1
     tags:
         string,search,find,subsequence,right
     '''
@@ -250,6 +278,9 @@ def replace_str( cat ) :
         test: the string within the target string to be replaced
         replace: the replacement string
         str: the string with replacements
+        
+        Example: "Bovril prevents that sinking feeling" 'Bovril "Old Sloshingfroth Beer" replace_str =>
+                    "Old Sloshingfroth Beer prevents that sinking feeling"
     tags:
         string,replace
     '''
@@ -265,25 +296,13 @@ def str_to_list( cat ) :
         Explodes the string on top of the stack into a list of individual letters
         src: the source string
         lst: the list of constituent letters
+        
+        Example: "Just an abc" explode => 'J 'u 's 't " " 'a 'n " "c 'a 'b 'c
     tags:
         string,list,explode
     '''
     s = cat.stack.pop()
     cat.stack.push( [x for x in str(s)] )
-
-@define(ns, 'as_string')
-def as_string( cat ) :
-    '''
-    as_string : (any:src -> string:str)
-    
-    desc:
-        Casts a variant to a string
-        src: value to be cast to a string
-        str: the resulting string
-    tags:
-        conversion,string
-    '''
-    cat.stack.push( str(cat.stack.pop()) )
 
 @define(ns, 'oct_str')
 def oct_str( cat ) :
@@ -295,6 +314,8 @@ def oct_str( cat ) :
         onto the stack
         src: the integer to be converted to an octal string
         str: the resulting string representation of the value in octal
+        
+        Example: 123 oct_str => '0173
     tags:
         string,conversion,octal,integer
     """
@@ -309,6 +330,8 @@ def str_as_hex( cat ) :
         Pushes the hex character representation of the string onto the stack
         src: the string to be converted to a string of hex characters
         str_as_hex: the resulting string representation of the source as hex digits
+        
+        Example: "Hello, world!" str_as_hex => '48.65.6c.6c.6f.2c.20.77.6f.72.6c.64.21
     tags:
         string,conversion,hex
     """

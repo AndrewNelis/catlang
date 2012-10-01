@@ -3,16 +3,21 @@
 from cat.namespace import *
 ns = NameSpace()
 
-@define(ns, 'eq,=')
+@define(ns, 'eq,==')
 def eq( cat ) :
     """
     eq : (any:lhs any:rhs -> bool:TF)
+    == : (any:lhs any:rhs -> bool:TF)
     
     desc:
         Returns True if top two items on cat.stack have the same value; otherwise False
         lhs: left hand comparand
         rhs: right hand comparand
         TF: True of the two comparands are equal; False otherwise
+        
+        Example: 1 2 ==   => False
+                 'a 'b == => False
+                 23 23 eq => True
     tags:
         conditional,comparison,equality
     """
@@ -23,12 +28,17 @@ def eq( cat ) :
 def neq( cat ) :
     """
     neq : (any:lhs any:rhs -> bool:TF)
+    !=  : (any:lhs any:rhs -> bool:TF)
     
     desc:
         Returns True if top two items on cat.stack have differning values; otherwise False
         lhs: left hand comparand
         rhs: right hand comparand
         TF: True of the two comparands are not equal; False otherwise
+        
+        Example: 1 2 !=   => True
+                 2 2 !=   => False
+                 'a 'b ne => True
     tags:
         conditional,comparison,inequality
     """
@@ -39,6 +49,7 @@ def neq( cat ) :
 def gt( cat ) :
     """
     gt : (any:lhs any:rhs -> bool:TF)
+    >  : (any:lhs any:rhs -> bool:TF)
     
     desc:
         Returns True if the value at [-1] is greater than the one at [0];
@@ -46,6 +57,10 @@ def gt( cat ) :
         lhs: left hand comparand
         rhs: right hand comparand
         TF: True of lhs is greater than rhs; False otherwise
+        
+        Example: 1 2 >   => False
+                 2 1 gt  => True
+                 'a 'b > => False
     tags:
         conditional,comparison,greater_than
     """
@@ -56,6 +71,7 @@ def gt( cat ) :
 def lt( cat ) :
     """
     lt : (any:lhs any:rhs -> bool:TF)
+    <  : (any:lhs any:rhs -> bool:TF)
     
     desc:
         Returns True if the object at [-1] is less than the one at [0];
@@ -63,7 +79,10 @@ def lt( cat ) :
         lhs: left hand comparand
         rhs: right hand comparand
         TF: True of lhs is less than rhs; False otherwise
-    
+        
+        Example: 1 2 <   => True
+                 2 1 lt  => False
+                 'a 'b < => True
     tags:
         conditional,comparison,less_than
     """
@@ -74,6 +93,7 @@ def lt( cat ) :
 def gteq( cat ) :
     """
     gteq : (any:lhs any:rhs -> bool:TF)
+    >=   : (any:lhs any:rhs -> bool:TF)
     
     desc:
         Returns True if the object at [-1] is greater than or equal to the one at [0];
@@ -81,6 +101,11 @@ def gteq( cat ) :
         lhs: left hand comparand
         rhs: right hand comparand
         TF: True of lhs is greater than or equal to rhs; False otherwise
+        
+        Example: 3 4 >=     => False
+                 3 3 gteq   => True
+                 4 2 >=     => True
+                 'a 'b gteq => False
     tags:
         conditional,comparison,less_than,equals
     """
@@ -91,6 +116,7 @@ def gteq( cat ) :
 def lteq( cat ) :
     """
     lteq : (any:lhs any:rhs -> bool:TF)
+    <=   : (any:lhs any:rhs -> bool:TF)
     
     desc:
         returns True if the object at [-1] is less than or equal to the one at [0];
@@ -99,6 +125,10 @@ def lteq( cat ) :
         rhs: right hand comparand
         TF: True of lhs is less than or equal to rhs; False otherwise
     
+        Example: 2 3 <=     => True
+                 3 3 <=     => True
+                 4 3 <=     => False
+                 'a 'b lteq => True
     tags:
         conditional,comparison,less_than,equals
     """
@@ -113,6 +143,7 @@ def true( cat ) :
     desc:
         Pushes the boolean value True on the stack
     
+        Example: true => True
     tags:
         conditional,boolean.true
     '''
@@ -126,6 +157,7 @@ def false( cat ) :
     desc:
         Pushes the boolean value False on the stack
     
+        Example: false => False
     tags:
         conditional,boolean,false
     '''
@@ -182,7 +214,7 @@ def gtz( cat ) :
 @define(ns, 'gez')
 def gez( cat ) :
     '''
-    eez : (nbr:value -> bool:TF)
+    gez : (nbr:value -> bool:TF)
 
     desc:
         Returns true if the top value is greater than zero

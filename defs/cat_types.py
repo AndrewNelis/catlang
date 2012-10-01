@@ -9,9 +9,12 @@ def typename( cat ) :
     typename : (any:obj -> string:type_name)
     
     desc:
-        Returns the name of the type of an object
+        Returns the name of the type of an object.
+        Consumes the argument.
         obj: object to be typed
         type_name: the Python type
+        
+        Example 123 typename => <type 'int'>
     tags:
         types
     '''
@@ -20,12 +23,15 @@ def typename( cat ) :
 @define(ns, 'typeof')
 def typeof( cat ) :
     '''
-    typeof : (any:ibj -> any:obj type:obj_type)
+    typeof : (any:oibj -> any:obj type:obj_type)
     
     desc:
-        Returns a type tag for an object
+        Returns a type tag for an object.
+        Does not consume the argument.
         obj: the object to be typed
         obj_type: standard Python type for the object
+        
+        Example 'abc typeof => 'abc <type 'str'>
     tags:
         types
     '''
@@ -39,6 +45,8 @@ def int_type( cat ) :
     desc:
         Pushes a value representing the type of an int
         int_type: Python type of an integer
+        
+        Example: int_type => <type 'int'>
     tags:
         types,int
     '''
@@ -52,6 +60,8 @@ def string_type( cat ) :
     desc:
         Pushes a value representing the type of a string
         string_type: the Python type of a string
+        
+        Example: string_type => <type 'str'>
     tags:
         types
     '''
@@ -65,6 +75,8 @@ def float_type( cat ) :
     desc:
         Pushes a value representing the type of a float
         float_type: Python type of a floating point number
+        
+        Example: float_type => <type 'float'>
     tags:
         types
     '''
@@ -78,6 +90,8 @@ def bool_type( cat ) :
     desc:
         Pushes a value representing the type of a boolean
         bool_type: Python type of a boolean
+        
+        Example: bool_type => <type 'bool'>
     tags:
         types
     '''
@@ -91,6 +105,8 @@ def list_type( cat ) :
     desc:
         Pushes a value representing the type of a list
         list_type: the Python type of a list
+        
+        Example: list_type => <type 'list'>
     tags:
         types
     '''
@@ -102,8 +118,10 @@ def function_type( cat ) :
     function_type : ( -> type:function_type)
     
     desc:
-        Pushes a value representing the type of a list
+        Pushes a value representing the type of a Python function
         function_type: the Python type of a function
+        
+        Example: function_type => <type 'function'>
     tags:
         types
     '''
@@ -115,8 +133,10 @@ def datetime_type( cat ) :
     datetime_type : ( -> type:datetime_type)
     
     desc:
-        Pushes a value representing the type of a list
+        Pushes a value representing the type of a datetime.datetime instance
         datetime_type: Python type of a datetime
+        
+        Example: datetime_type => <type 'datetime.datetime'>
     tags:
         types
     '''
@@ -128,7 +148,7 @@ def datetime_type( cat ) :
 @define(ns, 'type_eq')
 def type_eq( cat ) :
     '''
-    type_eq : (type:lhs type:rhs -> type:lhs type:rhs bool:TF)
+    type_eq : (any:lhs any:rhs -> any:lhs any:rhs bool:TF)
     
     desc:
         Returns True if either type is assignable to the other
@@ -136,11 +156,12 @@ def type_eq( cat ) :
         lhs: a type
         rhs: a type
         TF: true if the types are the same; False otherwise
+        
+        Example: 123 321 type_eq => True
     tags:
         types
     '''
-    l = cat.stack.stack[-2]
-    r = cat.stack.stack[-1]
+    r, l = cat.stack.peek_n( 2 )
     cat.stack.push( type(l) == type(r) )
 
 @define(ns, 'stack_types')
@@ -153,8 +174,10 @@ def stack_types( cat ) :
         in the same order as the element on the cat.stack with the deepest
         item first and the top item last
         types: a list of Python types, one for each object on the stack
+        
+        Example: 1 'zz 2.34 [3 2 1] list stack_types
     tags:
-        types,stack 
+        types,stack,display,console
     '''
     typeList = []
     

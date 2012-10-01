@@ -13,14 +13,16 @@ letters = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 @define(ns, 'doc')
 def show_doc( cat ) :
     '''
-    doc : (string:func_name -> --)
+    doc : (string:function_name -> --)
     
     desc:
-        Displays documentation for function whose name string is on top of the cat.stack
+        Displays documentation for function whose name string is on top of the stack.
         A word name may be prefixed with a namespace. E.g. 'shuffle:abba doc
-        func_name: the word for which to fetch documentation
+        function_name: the word for which to fetch documentation
+        
+        Example: 'doc doc
     tags:
-        meta,definitions,methods,word,documentation
+        meta,definitions,methods,word,documentation,display,doc
     '''
     name = cat.stack.pop().strip( '"' )
     
@@ -54,9 +56,10 @@ def dumpdef( cat ) :
     
     desc:
         Displays the definition string of the named function to the console
-        The function name may be prefixed with a '<namespace>:' if desired
-        Example: 'shuffle:abba def
+        The function name may be prefixed with a '<namespace>:' if desired.
         name: the name of the word whose definition is to be displayed
+        
+        Example: 'shuffle:abba def
     tags:
         custom,console,debugging,word,definition,display
     '''
@@ -90,10 +93,12 @@ def info( cat ) :
     info : (-- -> --)
     
     desc:
-        lists modules available for use and other bits of useful information
+        Lists modules available for use and other bits of useful information
         for the default user namespace.
+        
+        Example: info
     tags:
-        modules,words,instances,variables,links,filesinfo
+        modules,words,instances,variables,links,files,info,modules
     '''
     userNS = cat.ns.getUserNS()
     i_c    = cat.ns.info_colour
@@ -140,10 +145,11 @@ def showVars( cat ) :
     vars : (-- -> --)
     
     desc:
-        :ists names of variables in the user and global symbol tables
+        Shows names of variables in the user and global symbol tables
         
+        Example: vars
     tags:
-        user_variables,display
+        user_variables,display,user,variables,console
     '''
     i_c = cat.ns.info_colour
     
@@ -171,13 +177,15 @@ def catDir( cat ) :
     dir : ( string:module_name -> --)
     
     desc:
-        displays the results of applying the Python 'dir' function
-        to the argument on top of the cat.stack. Used to examine the content
+        Displays the results of applying the Python 'dir' function
+        to the argument on top of the stack. Usually used to examine the content
         of sys.modules or the contents of a class
         module_name: the name of the module (or class) whose functions (methods)
                      are to be displayed
+        
+        Example: 'math dir
     tags:
-        python,dir,module,class
+        python,dir,module,class,function,method
     '''
     if cat.stack.length() == 0 :
         arg = ''
@@ -203,8 +211,10 @@ def words( cat, showAll=False ) :
     
     desc:
         Displays the names of available words to the user's terminal
+        
+        Example: show_words
     tags:
-        words,display
+        words,display,console
     '''
     i_c   = cat.ns.info_colour
     words = cat.ns.builtinWords()
@@ -236,6 +246,8 @@ def showAllWords( cat ) :
     
     desc:
         Shows all defined words in all namespaces
+        
+        Example: all_words
     tags:
         namespaces,words,functions
     '''
@@ -249,7 +261,8 @@ def find_words( cat ) :
     desc:
         Display the names of all words whose names satisfy a regular expression
         regex: the regular expression
-        Example: '.*NS$ find_words --> displays all words ending in NS
+        
+        Example: '.*ns$ find_words --> displays all words ending in NS
     tags:
         words,regex,display,console,regular,expression
     '''
@@ -400,12 +413,11 @@ def tag_search( cat ) :
         satisfying the provided tag expression. Tag glob expressions can contain the
         usual glob characters: *, ?, [, ]. A glob is used to select one or more tags that
         match it. If there are more tags than one the glob is replaced by a list of tags
-        of the form: (tag1 or tag2 or tag3...) including the parentheses.
-        The selected words have the form:
-            <namespace name>:<word name>
+        in the form: (tag1 or tag2 or tag3...) including the parentheses.
+        The selected words have the form: <namespace name>:<word name>
+        
         Example: "list and not (display or console)" tag_search
                  "cond* and not display" tag_search
-        
     tags:
         tags,search,words
     '''
@@ -434,8 +446,10 @@ def show_tags( cat ) :
     
     desc:
         Show all tags and their number of associated words: <tag name>/<count>
+        
+        Example: show_tags
     tags:
-        display,tags
+        display,tags,console
     '''
     _tagMap( cat )
     
@@ -457,6 +471,7 @@ def show_inst( cat ) :
     desc:
         Displays all instances defined in the currently active namespace
     
+        Example: show_insts
     tags:
         instances,display,console
     '''
@@ -469,6 +484,8 @@ def showAllInsts( cat ) :
     
     desc:
         Shows all instances defined in any namespace
+        
+        Example: show_all_insts
     tags:
         instances,display,console
     '''
@@ -481,15 +498,17 @@ def showAllInsts( cat ) :
         cat.output( "\nInstances defined in '%s':" % item, i_c )
         cat.output( cat.ns._formatList(allInst[item]), i_c )
 
-@define(ns, 'udf')
+@define(ns, 'udef')
 def udf( cat ) :
     '''
-    udf : (-- -> --)
+    udef : (-- -> --)
     
     desc:
         Shows all user-defined functions
+        
+        Example: udef
     tags:
-        words,user_defined,display
+        words,user,defined,display,console
     '''
     keys = cat.ns.allWordNames()
     cat.output( cat.ns._formatList(keys), cat.ns.info_colour )
@@ -501,8 +520,10 @@ def listDefinitionFiles( cat) :
     
     desc:
         Lists the contents of all of the definition files in the
-        directory indicated by the path (string) on top of the cat.stack
+        directory indicated by the path (string) on top of the stack
         path: path to directory containing files to list
+        
+        Example: 'CatDefs/ list_files
     tags:
         extension,definitions,files,display
     '''
@@ -557,10 +578,11 @@ def whereis( cat ) :
             built-in (primitive)
             in a definition file
             user defined
-        E.g. 'swap whereis
         word: the word whose namespace is sought
+        
+        Example: 'swap whereis
     tags:
-        search,word
+        search,word,display
     '''
     from glob import iglob
     
@@ -635,11 +657,14 @@ def _help( cat ) :
     
     desc:
         Searches user namespaces for help on 'name' (combination of 'doc' and 'def')
-        If not a built-in or user-defined word, invokes the Python help system for
-        the object whose name is on top of the stack
+        If not a built-in or user-defined word, the Python help system is invoked for
+        the object whose name is on top of the stack.
         'name': string may be of the form <namespace>:<name> or <name>.<name>...
+        
+        Example: 'swap help
+                 'math help
     tags:
-        console,help,display
+        console,help,display,help
     '''
     name = cat.stack.pop()
     i_c  = cat.ns.info_colour
@@ -717,7 +742,10 @@ def getWords( cat ) :
     
     desc:
         Returns a list of words defined in the current user namespace
+        to the top of the stack.
         words: defined in user namespace
+        
+        Example: get_words
     tags:
         words,user,list
     '''
@@ -729,13 +757,16 @@ def fetch( cat, wrd=None ) :
     fetch  : (string:word -> --)
     
     desc:
-        fetches and loads into the user's workspace the standard definition of the
-        word on top of the stack. The "word" may be of the form 'word1,word2,word3,...
+        Fetches and loads into the user's workspace the standard definition of the
+        word whose name is on top of the stack. The "word" may be of the form 'word1,word2,word3,...
         (e.g. 'test,other) or a list (e.g. ['test 'other] list)
         The words may also be prefixed by <namespace>:  (e.g. 'core:modn) to fetch
-        the word from an existing namespace (e.g. 'core:modn fetch fetches word 'modn'
-        from namespace 'core')
+        the word from an existing namespace (e.g. 'core:modn fetch -- fetches word 'modn'
+        from namespace 'core'). When present, dependencies are honored and the antecedent
+        definitions are loaded as well.
         word: the name of the word to fetch from the files in the 'global:CatDefs' directory
+        
+        Example: 'abba fetch
     tags:
         word,define,fetch
     '''
@@ -879,7 +910,7 @@ def load( cat, force=False, nmsp='' ) :
     load : ( list|string:fileName -> --)
     
     desc:
-        Loads the script whose name string is on top of the cat.stack into a namespace
+        Loads the script whose name string is on top of the stack into a namespace
         The object on the stack may take the form:
             string: <simple file name>
             string: <simple file name>,<simple file name>,...
@@ -888,6 +919,8 @@ def load( cat, force=False, nmsp='' ) :
             list: [<simple file name>, <simple file name>, ...]
             list: [<namespace>:<simple file name>,...]
             fileName: the string or list providing the name of the file(s) to load
+            
+            Example: 'TS:TimeStack.cat load
     tags:
         file,load,script
     '''
@@ -1015,11 +1048,14 @@ def load( cat, force=False, nmsp='' ) :
 @define(ns, 'reload')
 def reload( cat ) :
     '''
-    #reload : ( string:fileName -> --)
+    reload : ( string:fileName -> --)
     
     desc:
-        Reloads the script whose name string is on top of the cat.stack
-        fileName: the string or list of files to be reloaded
+        Reloads the script whose name string is on top of the stack
+        fileName: the string or list of files to be reloaded, as described in 'load'
+                    word documentation.
+        
+        Example: 'TS:TimeStack.cat reload
     tags:
         file,reload,script
     '''
@@ -1028,11 +1064,13 @@ def reload( cat ) :
 @define(ns, 'load_defs')
 def loadAllDefs( cat ) :
     '''
-    allDefs : (-- -> --)
+    load_defs : (-- -> --)
     
     desc:
-        Load all definitions into their corresponding namespaces
-        Avvesses definition files in directory pointed to by 'global:CatDefs'
+        Load all definitions (in CatDefs directory) into their corresponding namespaces
+        Accesses definition files in directory pointed to by 'global:CatDefs'
+        
+        Example: load_defs
     tags:
         namespaces,definitions,file,script
     '''
@@ -1052,14 +1090,15 @@ def catImport( cat ) :
     import : (string:module_name -> --)
     
     desc:
-        imports the named module for use by the program
+        Imports the named module for use by the program.
         Note: members of the module are accessed  with this notation: <module name>.<member name>
               parameters must precede the function call as a list with arguments in the order
               required by the function. E.g. ([base expt] list math.pow -> base^expt)
+        module_name: the name of the module to import
+        
         Example: 'math import
                  'os import
                  'localModule import
-        module_name: the name of the module to import
     tags:
         module,import 
     '''
@@ -1077,16 +1116,17 @@ def catInstance( cat ) :
     instance (list:args string:module.class string:name -> --)
     
     desc:
-        Creates an instance of a specified class
-        instance is invoked in the usual way: <instance>.<method>
-        Example: 'Meeus import
-                 nil 'Meeus.Meeus 'm instance
-                 Use:  [2012,7,4] m.JD
+        Creates an instance of a specified class.
+        The instance is invoked in the usual way: <instance>.<method>
         args: a list of arguments required by __init__ when creating an instance (if none, use 'nil')
         module.class: the class within the module called to create an instance
         name: the name by which the instance will be known. Can be of the form
                 <namespace>:<instance name> to force the instance into the
                 selected namespace
+        
+        Example: 'Meeus import
+                 nil 'Meeus.Meeus 'm instance
+                 Use:  [2012 7 4] list m.JD
     tags:
         instance,class,module
     '''
@@ -1129,9 +1169,11 @@ def asInstance( cat ) :
     
     desc:
         Takes the class instance at [-1] and enters it into the instances table
-        with the name 'name'. The name may be of the form <namespace>:<name>
+        with the name 'name'. The name may be of the form <namespace>:<name>.
         instance: the instance to be recorded
         name: the name of the instance
+        
+        Example: m 'mm as_instance
     tags:
         instance,class,save
     '''
@@ -1158,8 +1200,10 @@ def newPrompt( cat ) :
     desc:
         Sets the prompt string to the string on top of the cat.stack
         prompt: the new prompt
+        
+        Example: 'TimeStack prompt
     tags:
-        console,REPL
+        console,REPL,prompt
     '''
     cat.ns.setVar( 'global:prompt', str(cat.stack.pop()) )
 
@@ -1171,8 +1215,10 @@ def append_sys_path( cat ) :
     desc:
         Appends the absolute file path on top of the stack to sys.path
         absolute_file_path: the full (absolute) path to (and including) the file name
+        
+        Example: 'TimeStack.py append_to_sys_path
     tags:
-        io,file,path,sys.path
+        file,path,sys.path,append
     '''
     import sys
     
@@ -1182,14 +1228,16 @@ def append_sys_path( cat ) :
     sys.path.append( path )
 
 @define(ns, 'config_get')
-def config( cat ) :
+def config_get( cat ) :
     '''
     config_get : (string:section_and_key --> string:key_value)
     
     desc:
-        Pushes the value of the key onto the stack.
+        Pushes the value of the key associated with catlang.cfg onto the stack.
         section_and_key: a string of the form <section>:<key>
         key_value: the value of the key as a string
+        
+        Example: 'prompt:default config_get => "Cat>"
     tags:
         config,configuration,key,value,get
     '''
@@ -1205,6 +1253,8 @@ def config_bool( cat ) :
         Pushes the value of the key onto the stack.
         section_and_key: a string of the form <section>:<key>
         key_value: the value of the key as a boolean (True or False)
+        
+        Example: 'display:use_colour config_get_bool => True
     tags:
         config,configuration,key,value,get,boolean
     '''
@@ -1220,6 +1270,8 @@ def config_float( cat ) :
         Pushes the value of the key onto the stack.
         section_and_key: a string of the form <section>:<key>
         key_value: the value of the key as a float
+        
+        Example: 'location:elevation config_get_float => 1829.0
     tags:
         config,configuration,key,value,get,float
     '''
@@ -1235,6 +1287,8 @@ def config_int( cat ) :
         Pushes the value of the key onto the stack.
         section_and_key: a string of the form <section>:<key>
         key_value: the value of the key as an integer
+        
+        Example: 'test:size config_get_int => 42
     tags:
         config,configuration,key,value,get,int,integer
     '''
@@ -1251,6 +1305,8 @@ def config_set( cat ) :
         and the associated value at [-1]
         value: the value string
         section_and_key: a string of the form <section name>:<key name>
+        
+        Example: 'TimeStack> 'prompt:default config_set
     tags:
         meta,config,configuration,set,option,key,value
     '''
@@ -1270,6 +1326,8 @@ def config_save( cat ) :
     desc:
         Saves the current configuration dictionary as a file.
         filename: the name of the target file to receive the configuration info
+        
+        Example: 'new_catlang.cfg config_save
     tags:
         config,configuration,save
     '''
@@ -1287,6 +1345,8 @@ def config_del_sect( cat ) :
         Deletes from the configuration dictionary the section whose name
         is on top of the stack.
         sect_name: the name of the section to be deleted
+        
+        Example: 'test config_del_section
     tags:
         config,configuration,delete,section
     '''
@@ -1308,6 +1368,8 @@ def config_del_key( cat ) :
         is on top of the stack.
         sect_and_key: the name of the section and key to be deleted. Must be of
                       the form: <section name>:<key>
+        
+        Example: 'test:size config_del_key
     tags:
         config,configuration,delete,key,option
     '''

@@ -21,6 +21,8 @@ def dumpNS( cat ) :
                 if 'all' -- all namespaces are dumped
                 if 'this' -- the current namespace is dumped
                 otherwise the named namespace is dumped (providing it exists)
+        
+        Example: 'all 'this dump_ns
     tags:
         debug
     '''
@@ -34,11 +36,13 @@ def dumpNS( cat ) :
 @define(ns, 'dump_stack')
 def dumpStack( cat ) :
     '''
-    #dump : (-- -> --)
+    dump_stack : (-- -> --)
     
     desc:
         Non-destructively dumps the entire contents of the stack to the console
         Most useful if stack output in the REPL is turned off
+        
+        Example: dump_stack
     tags:
         debug,console,stack,dump
     '''
@@ -52,8 +56,10 @@ def _pdb( cat ) :
     desc:
         Enters pdb
         Set breakpoints when pdb has been entered
+        
+        Example: pdb
     tags:
-        custom,system,debugging.pdb
+        custom,system,debugging,pdb
     '''
     import pdb
     
@@ -65,8 +71,10 @@ def trace( cat ) :
     trace: (-- -> --)
     
     desc:
-        toggles the global traceing flag to enable simple tracing of function
+        Toggles the global traceing flag to enable simple tracing of function
         execution.
+        
+        Example: trace
     tags:
         custom,debugging,trace
     '''
