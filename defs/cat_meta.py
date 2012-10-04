@@ -16,7 +16,7 @@ def show_doc( cat ) :
     doc : (string:function_name -> --)
     
     desc:
-        Displays documentation for function whose name string is on top of the stack.
+        Displays documentation for function (word) whose name string is on top of the stack.
         A word name may be prefixed with a namespace. E.g. 'shuffle:abba doc
         function_name: the word for which to fetch documentation
         
@@ -30,16 +30,17 @@ def show_doc( cat ) :
         ns, name = name.split(":")
         
         if not cat.ns.isNS(ns) :
-            raise ValueError, "No namespace called '%s'" % ns
+            raise ValueError, "doc: No namespace called '%s'" % ns
         
-            defined, obj = cat.ns.getWord( name, ns )
+        else :
+            defined, obj, _ = cat.ns.getWord( name, ns )
             
             if defined :
                 cat.output( obj[1], cat.ns.info_colour )
                 return
-        
-        else :
-            raise ValueError, "doc: No documentation for '%s' in '%s'" % (name, ns)
+            
+            else :
+                raise ValueError, "doc: No documentation for '%s' in '%s'" % (name, ns)
     
     defined, obj, _ = cat.ns.getWord( name )
     
@@ -47,7 +48,7 @@ def show_doc( cat ) :
         cat.output( obj[1], cat.ns.info_colour )
     
     else :
-        cat.output( "No description for " + name, cat.ns.info_colour )
+        cat.output( "doc: No documentation for " + name, cat.ns.info_colour )
 
 @define(ns, 'def')
 def dumpdef( cat ) :
@@ -72,7 +73,7 @@ def dumpdef( cat ) :
             defined, func, _ = cat.ns.getWord(name, ns)
         
         else :
-            raise ValueError, "Namespace in '%s' is undefined" % atom
+            raise ValueError, "def: Namespace in '%s' is undefined" % atom
     
     else :
         defined, func, _ = cat.ns.getWord( atom )
@@ -262,7 +263,7 @@ def find_words( cat ) :
         Display the names of all words whose names satisfy a regular expression
         regex: the regular expression
         
-        Example: '.*ns$ find_words --> displays all words ending in NS
+        Example: '.*_ns$ find_words --> displays all words ending in NS
     tags:
         words,regex,display,console,regular,expression
     '''
@@ -1018,7 +1019,7 @@ def load( cat, force=False, nmsp='' ) :
                     buffer = front + repl
                     defn   = cat.parser.parse_definition( buffer )
                     cat.ns.addWord( defn.name, list(cat.parser.gobble(defn.definition)),
-                                    "  %s : %s\n%s" % (defn.name, defn.effect, defn.description), tgtNS )
+                                    "  %s %s\n%s" % (defn.name, defn.effect, defn.description), tgtNS )
                     deps.append( defn.dependencies )
                     buffer = ""
                     inDef  = False
@@ -1191,7 +1192,7 @@ def asInstance( cat ) :
     
     # save the instance in the specified namespace
     cat.ns.addInst( name, inst, nspc ) 
-        
+
 @define(ns, 'prompt')
 def newPrompt( cat ) :
     '''
