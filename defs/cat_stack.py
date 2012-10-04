@@ -210,12 +210,13 @@ def _eval( cat ) :
     apply : ( function:exec_func -> any:ans )
     
     desc:
-        Applies a function to the stack (i.e. executes an instruction)
+        Applies a function to the stack (i.e. executes a "program" or a string)
         exec_func: the function to evaluate
         ans: the result of the evaluation
         
         Example: 2 [inc dup] apply   => 3 3
                  2 3 [add 2 **] eval => 25
+                 "2 3 4 + *" eval    => 14
     tags:
         functions,eval,apply
     '''
