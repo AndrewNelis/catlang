@@ -315,7 +315,6 @@ class NS:
         # note that the 'std' namespace list ('__links__') has as its last element the
         # current user namespace and so it is searched automatically just like
         # the other links associated with 'std'
-        ns  = self._checkNS( ns )
         val = self._searchLinks( name, ns, 'words', [] )
         
         if val[0] :
@@ -376,8 +375,8 @@ class NS:
         :rtype: a tuple of the form (bool:<found?>, tuple:<word def>, string:<namespace>)
         '''
         for ns in self._nsDict :
-            if self.isWord( word, ns ) :
-                return self.getWord( word, ns )
+            if self.isWord( word, ns )[0] :
+                return self._searchLinks( word, ns, 'words', [] )
         
         return (False, None, None )
     
@@ -663,8 +662,13 @@ class NS:
             if ns == 'std' :
                 continue
             
-            if self.isInst( word, ns ) :
-                return self.getInst( word, ns )
+            # use 'try' because isInst will raise an exception for 'std' or 'cat_*' namespaces
+            try :
+                if self.isInst( word, ns ) :
+                    return self.getInst( word, ns )
+            
+            except :
+                continue
         
         return (False, None, None )
     
