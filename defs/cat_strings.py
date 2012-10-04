@@ -3,6 +3,25 @@
 from cat.namespace import *
 ns = NameSpace()
 
+@define(ns, 'str_cat')
+def strCat( cat ) :
+    '''
+    str_cat : (string:lhs string: rhs -> string:lhsrhs
+    
+    desc:
+        Concatenates the two strings on top of the stack and pushes
+        the result onto the stack.
+        lhs: the left-hand string portion
+        rhs: the right-hand string portion:
+        lhsrhs: the concatenated string
+        
+        Example: 'abc 'def str_cat => 'abcdef
+    tags:
+        string,concatenate,cat
+    '''
+    r, l = cat.stack.pop_2()
+    cat.stack.push( str(l) + str(r) )
+
 @define(ns, 'split')
 def split( cat ) :
     '''
