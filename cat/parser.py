@@ -132,7 +132,7 @@ class Parser:
             base = 10
 
             # have a number
-            if value.count(".") == 1 or value.lower().count("e") == 1:
+            if value.count(".") == 1 or ((value.lower().count("e") == 1) and (value.lower()[1] != 'x')):
                 # have a float
                 return sign * float(value)
 
