@@ -19,8 +19,6 @@ MOTD = (
     "\\ continues input onto a new line with prompt '...>'",
 )
 
-MOTD_COLOR = 'green'
-
 
 class REPL:
 
@@ -28,8 +26,11 @@ class REPL:
         self.cat = cat
 
     def print_motd(self):
-        for line in MOTD:
-            self.cat.output(line, MOTD_COLOR)
+        if self.cat.ns.config.getboolean( 'misc', 'show_MOTD' ) :
+            i_c = self.cat.ns.config.get( 'display', 'info' )
+            
+            for line in MOTD:
+                self.cat.output(line, i_c)
     
     def run(self):
         self.print_motd()
@@ -46,11 +47,12 @@ class REPL:
             s_c = None
         
         # load initialization file if any
-        fileName = self.cat.ns.config.get( 'paths', 'load_file' )
-        
-        if fileName :
-            self.cat.output( "\nLoading file '%s'\n" % fileName, self.cat.ns.config.get('display', 'info') )
-            self.cat.eval( "'" + fileName + " load" )
+        if self.cat.ns.config.has_option( 'paths', 'load_file' ) :
+            fileName = self.cat.ns.config.get( 'paths', 'load_file' )
+            
+            if fileName :
+                self.cat.output( "\nLoading file '%s'\n" % fileName, self.cat.ns.config.get('display', 'info') )
+                self.cat.eval( "'" + fileName + " load" )
         
         # main interactive loop
         while True:
@@ -93,7 +95,7 @@ class REPL:
                 except Exception, msg:
                     # Three response levels:
                     # super -- full backtrace and kill execution
-                    # on    -- print error message and backtrace and continue
+                    # on    -- print error message with abbreviated backtrace and continue
                     # off   -- print error message and continue
                     self.cat.output(str(msg), e_c)
                     self.cat.output( self.cat.stack.format(alt), s_c )
