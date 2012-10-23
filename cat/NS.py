@@ -791,7 +791,7 @@ class NS:
             raise valueError, "The word '%s' is undefined" % word
 
     # support routines
-    def _formatList( self, theList, across=5 ) :
+    def _formatList( self, theList, across=4 ) :
         '''Formats the list
         :param theList: the list to be formatted for printing
         :type theList: a list
@@ -823,7 +823,7 @@ class NS:
         
         return txt
     
-    def _printList( self, theList, across=5 ) :
+    def _printList( self, theList, across=4 ) :
         '''Print the elements in theList'''
         cat.output( self._formatList(theList, across), self.info_colour )
     
