@@ -92,7 +92,7 @@ class CatEval:
                     state = ' '.join(map(repr, self.stack))
 
                 print 'stack: %s' % state
-                print "atom:", atom
+                print "\natom:", atom
 
             # check for quoted string
             if isinstance(atom, basestring) and atom.startswith('"'):
