@@ -147,6 +147,34 @@ def halt( cat ) :
     n = int( cat.stack.pop() )
     raise Exception, "halt: Program halted with error code %d" % n
 
+@define(ns, 'dispatch')
+def dispatch( cat ) :
+    '''
+    dispatch1 : (any:arg list:functions -> any:ans)
+    
+    desc:
+        Dynamically dispatches a function depending on the index object
+        functions: the list of "indexed" functions to be executed
+        arg: the selector "index". Note: there is a special value that always
+             matches whatever the index: 'default
+        ans: the result of executing the function associated with the selector arg
+        
+        Example: 3 1 [1 [dup] 2 [drop] 3 [swap]] list dispatch => 3 3
+    tags:
+        control,functions,dispatch
+    '''
+    lst, obj = cat.stack.pop_2()
+    
+    for i in range(len(lst) / 2) :
+        t = lst[2 * i]
+        f = lst[2 * i + 1]
+        
+        if t == obj or t == 'default' :
+            cat.eval( f )
+            return
+    
+    raise Exception, "dispatch: Could not dispatch function"
+
 @define(ns, 'dispatch1')
 def dispatch1( cat ) :
     '''
