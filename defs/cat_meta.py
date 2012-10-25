@@ -968,7 +968,7 @@ def load( cat, force=False, nmsp='' ) :
         if fileName.count(":") == 1 :
             nspc, fileName = fileName.split(":")
             
-            if nmsp :
+            if not nmsp :
                 tgtNS = nspc
          
         if not force and cat.ns.hasFile(fileName, tgtNS) :
