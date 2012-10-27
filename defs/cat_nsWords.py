@@ -243,7 +243,7 @@ def wordsInNS( cat ) :
     for nsName in nsNames :
         keys = cat.ns.allWordNames( nsName )
         keys.sort()
-        cat.output( "For namespace %s:" % nsName, i_c )
+        cat.output( "For namespace '%s':" % nsName, i_c )
         cat.output(cat.ns._formatList(keys, across=4), i_c )
 
 @define(ns, 'links_in_ns')
@@ -267,7 +267,7 @@ def linksInNS( cat ) :
     for nsName in nsNames :
         keys = cat.ns.getLinksNS( nsName )
         keys.sort()
-        cat.output( "For namespace %s:" % nsName, i_c )
+        cat.output( "For namespace '%s':" % nsName, i_c )
         cat.output(cat.ns._formatList(keys), i_c )
 
 @define(ns, 'show_linked_in_ns,ls')
