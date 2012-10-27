@@ -928,7 +928,7 @@ def load( cat, force=False, nmsp='' ) :
     def stripComments( text ) :
         temp = text.strip()
         
-        if temp == "" or temp.startswith('//') or temp.startswith('#') :
+        if temp == "" or temp.startswith( ('//','#') ) :
             return ""
         
         ix = temp.rfind( '//' )
@@ -936,7 +936,13 @@ def load( cat, force=False, nmsp='' ) :
         if ix > 0 :
             temp = temp[:ix]
         
-        return temp
+        else :
+            ix = temp.rfind( '#' )
+            
+            if ix > 0 :
+                temp = temp[:ix]
+        
+        return temp + "\n"
     
     def flatten(x):
         result = []
@@ -950,8 +956,9 @@ def load( cat, force=False, nmsp='' ) :
             
         return result
     
-    deps      = []
-    fileNames = cat.stack.pop_list()
+    currentUserNS = cat.ns.getUserNS()
+    deps          = []
+    fileNames     = cat.stack.pop_list()
     
     # check for a predefined target namespace
     if nmsp :
@@ -968,9 +975,15 @@ def load( cat, force=False, nmsp='' ) :
         if fileName.count(":") == 1 :
             nspc, fileName = fileName.split(":")
             
+            # if nmsp arg is '' then there is no predefined namespace having precedence
             if not nmsp :
                 tgtNS = nspc
          
+            if not cat.ns.isNS( tgtNS ) :
+                cat.ns.createNS( tgtNS )
+            
+        cat.ns.changeUserNS( tgtNS )
+            
         if not force and cat.ns.hasFile(fileName, tgtNS) :
             continue
         
@@ -988,7 +1001,7 @@ def load( cat, force=False, nmsp='' ) :
             
             if not inDef :
                 if not temp.startswith( "define" ) :
-                    cat.eval( temp )
+                    cat.eval( temp.strip() )
                     
                     # the evaluation of temp may have changed the user's initial namespace
                     # if nmsp arg is '' then there is no predefined namespace
@@ -1003,12 +1016,8 @@ def load( cat, force=False, nmsp='' ) :
             # must be in a definition (this hack permits 1-line definitions)
             if inDef :
                 # consolidate lines of a definition into a single string
-                ix = line.rfind("//")   # remove possible line-end comments
-                
-                if ix > 0 :
-                    line = line[:ix] + " "
-                
-                buffer += line  # to preserve original formatting w/o line-end comments
+                buffer += temp
+                temp    = temp.strip()
                 
                 # end of function definition?
                 if not temp.endswith( "}}" ) and temp.endswith( "}" ) : 
@@ -1023,6 +1032,9 @@ def load( cat, force=False, nmsp='' ) :
                     deps.append( defn.dependencies )
                     buffer = ""
                     inDef  = False
+                
+                else :
+                    continue    # examine the next line
         
         cat.ns.addFile( fileName, tgtNS )
         fd.close()
@@ -1045,6 +1057,8 @@ def load( cat, force=False, nmsp='' ) :
             
             else :
                 fetch( cat, [dep] )
+        
+    cat.ns.changeUserNS( currentUserNS )
 
 @define(ns, 'reload')
 def reload( cat ) :
@@ -1114,7 +1128,7 @@ def catImport( cat ) :
 @define(ns, 'instance')
 def catInstance( cat ) :
     '''
-    instance (list:args string:module.class string:name -> --)
+    instance : (list:args string:module.class string:name -> --)
     
     desc:
         Creates an instance of a specified class.
@@ -1192,6 +1206,31 @@ def asInstance( cat ) :
     
     # save the instance in the specified namespace
     cat.ns.addInst( name, inst, nspc ) 
+
+@define(ns, 'get_instance')
+def get_instance( cat ) :
+    '''
+    get_instance : (string:arg -> instance:inst)
+    
+    desc:
+        Pushes the named instance to the top of the stack.
+        arg: the path to the instance. Takes the form: <namespace>:<instance name>
+        inst: the instance object
+        
+        Example: 'TS:ts get_instance => <the instance called ts>
+    tags:
+        instance,namespace
+    '''
+    path     = cat.stack.pop()
+    ns, inst = path.split( ":" )
+    
+    if not cat.ns.isNS(ns) :
+        raise ValueError, "get_instance: no namespace called '$%s'" % ns
+    
+    if not cat.ns.isInst( inst, ns ) :
+        raise ValueError, "get_instance: no instance called '%s' in namespasce '%s'" % (inst, ns)
+    
+    cat.stack.push( cat.ns.getInst(inst, ns)[1] )    
 
 @define(ns, 'prompt')
 def newPrompt( cat ) :
