@@ -16,7 +16,7 @@ tests = (
     ('3 %/', [5, 2]),
     ('**', [25]),
     ('1 2 3 4 clear', []),
-    ('clear 2 2 =', [True]),
+    ('clear 2 2 ==', [True]),
     ('clear 2 2 !=', [False]),
     ('clear 2 1 >', [True]),
     ('clear 2 1 <', [False]),
