@@ -71,7 +71,7 @@ def trace( cat ) :
     trace: (-- -> --)
     
     desc:
-        Toggles the global traceing flag to enable simple tracing of function
+        Toggles the global tracing flag to enable simple tracing of function
         execution.
         
         Example: trace
