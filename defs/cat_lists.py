@@ -1082,5 +1082,25 @@ def poly( cat ):
     
     cat.stack.push( p )
 
+@define(ns, 'in_list')
+def in_list( cat ) :
+    '''
+    in_list : (list:haystack any:needle -> boolean:TorF
+    
+    desc:
+        Searches a list for a value. Returns true or false on top of the stack.
+        haystack: the list to be searched
+        needle: the item to be found in the 'haystack'
+        TorF: true is pushed onto the stack if the needle is found in the haystack
+              false is pushed onto the stack if the needle is not found in the haystack
+        
+        Example: ['a 'b 'c 'd] list 'c in_list => True
+                 ['a 'b 'c 'd] list  3 in_list => False
+    tags:
+        list,search,find,contains
+    '''
+    needle, haystack = cat.stack.pop_2()
+    cat.stack.push( needle in haystack )
+
 def _returnNS() :
     return ns
