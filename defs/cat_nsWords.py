@@ -53,6 +53,22 @@ def setNS( cat ) :
     
     cat.ns.setUserNS( lst )
 
+@define(ns, 'is_ns')
+def is_ns( cat ) :
+    '''
+    is_ns : (string:ns_name -> boolean:TorF)
+    
+    desc:
+        Pushes True onto the stack if the word on top of the stack is the name of a namespace,
+        otherwise False is pushed onto the stack.
+        
+        Example: 'user is_ns => True
+    tags:
+        namespaces,exists
+    '''
+    ns = cat.stack.pop()
+    cat.stack.push( cat.ns.isNS(ns) )
+
 @define(ns, 'rename_ns,mv')
 def renameNS( cat ) :
     '''
