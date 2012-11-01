@@ -94,6 +94,20 @@ def getAllWords( cat ) :
         words,list
     '''
     cat.stack.push( cat.ns.allWordNames() )
+
+@define(ns, 'none')
+def _none( cat ) :
+    '''
+    none : (-- -> None)
     
+    desc:
+        Pushes the Python object 'None' onto the stack
+        
+        Example: none => None
+    tags:
+        none,python
+    '''
+    cat.stack.push( None )
+
 def _returnNS() :
     return ns
