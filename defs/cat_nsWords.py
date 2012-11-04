@@ -51,7 +51,7 @@ def setNS( cat ) :
         
         lst.append( name )
     
-    cat.ns.setUserNS( lst )
+    cat.ns.setUserLinksNS( lst )
 
 @define(ns, 'is_ns')
 def is_ns( cat ) :
@@ -260,7 +260,7 @@ def wordsInNS( cat ) :
         keys = cat.ns.allWordNames( nsName )
         keys.sort()
         cat.output( "For namespace '%s':" % nsName, i_c )
-        cat.output(cat.ns._formatList(keys, across=4), i_c )
+        cat.output(cat.ns._formatList(keys, across=3), i_c )
 
 @define(ns, 'links_in_ns')
 def linksInNS( cat ) :
@@ -320,7 +320,7 @@ def purgeNS( cat ) :
     tags:
         namespace,purge,words,delete,ns
     '''
-    items = stack.pop_list()
+    items = cat.stack.pop_list()
     
     for ns in items :
         if ns != 'std' and ns not in cat.ns.defns :
