@@ -12,7 +12,7 @@ def strCat( cat ) :
         Concatenates the two strings on top of the stack and pushes
         the result onto the stack.
         lhs: the left-hand string portion
-        rhs: the right-hand string portion:
+        rhs: the right-hand string portion
         lhsrhs: the concatenated string
         
         Example: 'abc 'def str_cat => 'abcdef
@@ -21,6 +21,23 @@ def strCat( cat ) :
     '''
     r, l = cat.stack.pop_2()
     cat.stack.push( str(l) + str(r) )
+
+@define(ns, 'strlen')
+def strLen( cat ) :
+    '''
+    strlen : (string:lhs -> string:lhs int:length
+    
+    desc:
+        Pushes the length of the string on top of the stack onto the stack.
+        lhs: the left-hand string portion
+        length: the length of string
+        
+        Example: "this is a test" strlen => "this is a test" 14
+    tags:
+        string,length,len,strlen
+    '''
+    strng = cat.stack.peek()
+    cat.stack.push( len(strng) )
 
 @define(ns, 'split')
 def split( cat ) :
