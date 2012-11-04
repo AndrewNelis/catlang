@@ -46,7 +46,12 @@ class CatEval:
         definition = self.parser.parse_definition(line)
 
         for word in definition.dependencies:
-            self.stack.push(word)
+            if ns :
+                self.stack.push( ns + ":" + word )
+            
+            else :
+                self.stack.push(word)
+            
             self.ns.exeqt( 'fetch' )
 
         doc = " %s %s\n\n%s" % (
@@ -94,21 +99,48 @@ class CatEval:
                 print 'stack: %s' % state
                 print "\natom:", atom
 
-            # check for quoted string
-            if isinstance(atom, basestring) and atom.startswith('"'):
-                self.stack.push(atom.strip('"'))
+            # check for quoted string or variable
+            if isinstance(atom, basestring) :
+                if atom.startswith('"') :
+                    self.stack.push(atom.strip('"'))
+                    continue
+                
+                # not a string, try user variable (getVar handles <namespace>: prefix)
+                defined, val = self.ns.getVar( atom )
+                
+                if defined :
+                    self.stack.push( val )
+                    continue
+            
+            # check for already converted number
+            if isinstance(atom, (int, float)) :
+                self.stack.push( atom )
                 continue
+            
+            # look for a qualified object (<ns name>:<obj>
+            if atom.count( ":" ) == 1 :
+                ns, atom = atom.split( ":" )
+            
+            else :
+                ns = None 
             
             # Try to get the atom as a named function next.
             try:
-                defined, func, _ = self.ns.getWord(atom)
+                defined, func, _ = self.ns.getWord(atom, ns) if ns else self.ns.getWord(atom)
 
             except Exception, msg:
                 raise
                 raise Exception, "eval: Error fetching %s (%s)" % (atom, msg)
 
             if defined:
+                # change execution context if ns has been defined
+                default = self.ns.getUserNS()   # save current execution context
+                
                 func = func[0]  # get the "function" ([1] is the doc)
+                
+                # if a different execution context is specified change to it
+                if ns :
+                    self.ns.changeUserNS( ns )
                 
                 if callable(func):
                     # It's a function i.e. built in.
@@ -117,17 +149,20 @@ class CatEval:
                 else:
                     # Otherwise it's a pre-defined list.
                     self.eval(func)
+                
+                # restore original execution context
+                self.ns.changeUserNS( default )
 
+            # Not a function. Check for special module.function call or instance.method call
             else:
-                # check for special module.function call, instance.method call, or user variable
                 if isinstance(atom, basestring):
                     # check for <module name>.<function name> or <instance name>.<method name>
                     mo = self.parser.parseModule.match(atom)
 
                     if mo:
                         # look for a user-created instance
-                        inst    = self.ns.getInst( mo.group(1) )    # inst == (T|F, instance, namespace)
-                        is_inst = inst[0]
+                        inst    = self.ns.getInst( mo.group(1), ns ) if ns else self.ns.getInst( mo.group(1) )
+                        is_inst = inst[0]    # inst == (T|F, instance, namespace)
                         
                         if is_inst :
                             is_callable = eval( "callable(%s)" % atom, self.ns.allInst(inst[2]) )
@@ -181,15 +216,9 @@ class CatEval:
                             else :
                                 self.stack.push( eval(cmd, sys.modules) )
                     
-                    # Not a module reference, check for a user variable
+                    # Not a module reference. Push onto stack.
                     else :
-                        defined, val = self.ns.getVar( atom )
-                        
-                        if defined :
-                            self.stack.push( val )
-                        
-                        else :
-                            self.stack.push( atom )
+                        self.stack.push( (ns + ":" + atom) if ns else atom )
                 
                 # not a string, push the value onto the stack
                 else :
