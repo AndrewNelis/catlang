@@ -49,7 +49,6 @@ class NS:
         self._nsDict['std'].addLink( 'user' )
         
         # prime the 'global' directory with a few values
-        self._nsDict['std'].addVar( 'CatDefs', self.config.get('paths','catdefs') )
         self._nsDict['std'].addVar( 'prompt',  self.config.get('prompt', 'default') )
     
     def _searchLinks(self, item, startNS='std', kind='words', viewed=[] ):
@@ -94,8 +93,11 @@ class NS:
         if ns == None :
             ns = self.getUserNS()
         
+        if not isinstance(ns, basestring) :
+            raise ValueError, "Namespace name must be a string"
+        
         if not self.isNS(ns) or ns in extra or ns in self.defns :
-            raise ValueError, "Namespace '%s' is invalid" % ns
+            raise ValueError, "Namespace '%s' is not available" % ns
         
         return ns
     
@@ -116,26 +118,31 @@ class NS:
         
         self._nsDict[nsName] = NameSpace()
     
-    def setUserNS( self, nsNames, ns=None ) :
+    def setUserLinksNS( self, nsNames, ns=None ) :
         '''
+        Replaces all existing links in the specified namespace with those
+        supplied as a comma-separated list of existing link names.
+        :param nsNames: list of namespaces to be linked to the specified namespace
+        :type nsNames: string
+        :param ns: target namespace whose links are to be replaced
+        :type ns: string (default is None => 'user')
         '''
-        if ns == None :
-            ns = self.getUserNS()
-        
+        ns = self._checkNS( ns, ['std'] )
         self._nsDict[ns].replaceLinks( nsNames )
     
     def renameNS( self, newNS, oldNS=None ) :
         '''Renames the oldNS to newNS
-        :param oldNS: name of an existing namespace':type oldNS: string
+        :param oldNS: name of an existing namespace
         :type oldNS: string
         :param newNS: the new namespace name
         :type newNS: string
         :rtype: none
         '''
         oldNS = self._checkNS( oldNS, ['std', 'user'] )
+        newNS = self._checkNS( newNS, ['std', 'user'] )
         
         if self.isNS(newNS) :
-            raise ValueError, "The 'newNS' namespace is already in existence"
+            raise ValueError, "renameNS: namespace '%s' is already in existence" % newNS
         
         self._nsDict[newNS] = self._nsDict[oldNS]
         del self._nsDict[oldNS]
@@ -146,18 +153,7 @@ class NS:
         :type nsName: string  (if the argument is None, the standard user namespace, 'user', is used)
         :rtype: none
         '''
-        if nsName == None :
-            nsName = 'user'
-        
-        if not isinstance(nsName, basestring) :
-            raise ValueError, "Namespace name must be a string"
-        
-        elif nsName == 'std' :
-            raise ValueError, "cannot use standard namespace as a user namespace"
-        
-        if not self.isNS(nsName) :
-            raise ValueError, "No namespace called '%s'" % nsName
-        
+        nsName = self._checkNS( nsName, ['std'] )        
         self._nsDict['std'].popLink()
         self._nsDict['std'].addLink( nsName )
     
@@ -194,6 +190,9 @@ class NS:
         :type dest: string
         :rtype: none
         '''
+        src  = self._checkNS( src, ['std'] )
+        dest = self._checkNS( dest, ['std'] )
+        
         if not self.isNS(src) :
             raise ValueError, "No source namespace (%s) to copy" % src
         
@@ -214,18 +213,8 @@ class NS:
         if src == dest :
             return
         
-        if src == None :
-            src = self.getUserNS()
-        
-        if dest == None :
-            dest = self.getUserNS()
-        
-        if not self.isNS(src) :
-            raise ValueError, "The source namespace '%s' is undefined" % src
-        
-        if not self.isNS(dest) :
-            raise ValueError, "The destination namespace '%s' is undefined" % dest
-        
+        src  = self._checkNS( src, ['std'] )
+        dest = self._checkNS( dest, ['std'] )
         self._nsDict[dest].addLink( src )
     
     def hasNS( self, ns, targetNS=None ) :
@@ -353,20 +342,23 @@ class NS:
         ns = self._checkNS( ns, ['std'] )
         return self._nsDict[ns].allWordNames()
     
-    def copyWord( self, name, ns=None ) :
-        '''Copies the word 'name' in namespace 'ns' to the currently active user's namespace
+    def copyWord( self, name, from_=None, to=None ) :
+        '''Copies the word 'name' in namespace 'frmo_' to the currently active user's namespace
         :param word: the name of the word to copy
         :type word: string
-        :param ns: the name of the namespace in which the word resides
-        :type ns: string (if 'None' then the default user namespace is used)
+        :param from_: the name of the namespace in which the word resides
+        :type from_: string (if 'None' then the default user namespace is used)
+        :param to: the namespace into which to copy the word
+        :type to: string (if 'None' then the default user namespace is used)
         '''
-        ns = self._checkNS( ns )
+        from_ = self._checkNS( from_ )
+        to    = self._checkNS( to )
         
-        if not self.isWord( name, ns ) :
-            raise ValueError, "There is no word '%s' in namespace '%s'" % (name, ns)
+        if not self.isWord( name, from_ ) :
+            raise ValueError, "There is no word '%s' in namespace '%s'" % (name, from_)
         
-        word = self._nsDict[ns].getWord()
-        self._nsDict[self.getUserNS()].addWord( *word )
+        word = self._nsDict[from_].getWord( name )
+        self._nsDict[to].addWord( name, word[1] )
     
     def getWordAnyNS( self, word ) :
         '''Returns word definition if it exists in any namespace
