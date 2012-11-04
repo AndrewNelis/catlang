@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Load all standard definitions into their respective namespaces
 // Be sure the file paths are correct
 
@@ -12,3 +13,19 @@
 "CatDefs/standard-hash.cat" 'hash loadNS
 "CatDefs/standard-vectors.cat" 'vectors loadNS
 "CatDefs/standard-geometry.cat" 'geometry loadNS
+=======
+// Cat code to load all standard definitions into their respective namespaces
+// Be sure the file paths are correct
+
+global:CatDefs "extended-shuffling.cat" str_cat 'shuffle load_ns
+global:CatDefs "standard-combinators.cat" str_cat 'combinators load_ns
+global:CatDefs "standard-control-flow.cat" str_cat 'control load_ns
+global:CatDefs "standard-core.cat" str_cat 'core load_ns
+global:CatDefs "standard-geometry.cat" str_cat 'geometry load_ns
+global:CatDefs "standard-hash.cat" str_cat 'hash load_ns
+global:CatDefs "standard-lists.cat" str_cat 'lists load_ns
+global:CatDefs "standard-math.cat" str_cat 'math load_ns
+global:CatDefs "standard-predicates.cat" str_cat 'predicates load_ns
+global:CatDefs "standard-shuffle.cat" str_cat 'shuffle load_ns
+global:CatDefs "standard-vectors.cat" str_cat 'vectors load_ns
+>>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60

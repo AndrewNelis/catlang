@@ -1,4 +1,8 @@
 *.py[co]
+<<<<<<< HEAD
+=======
+*.cfg
+>>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
 
 # Packages
 *.egg
@@ -25,3 +29,9 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+<<<<<<< HEAD
+=======
+
+# Mac related
+.DS_Store
+>>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60

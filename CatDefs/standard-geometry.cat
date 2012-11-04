@@ -3,7 +3,11 @@
 // without restriction, obligation or warantee.
 // http://www.cdiggins.com
 
+<<<<<<< HEAD
 "math" #import
+=======
+"math" import
+>>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
 
 define pow : (nbr:base nbr:expt -> nbr) { math.pow }
 define sin : (nbr -> nbr) { math.sin }
