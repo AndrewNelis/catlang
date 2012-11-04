@@ -15,11 +15,7 @@ class Parser:
 
     def __init__(self):
         self.parseInt = re.compile(r'^0\((?P<base>\d+)\)(?P<value>.*)$')
-<<<<<<< HEAD
-        self.parseModule = re.compile(r'(\w+)([.]\w+)+')
-=======
         self.parseModule = re.compile(r'(\w+)(\..+)')
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
         self.parseDef = re.compile(r'''
                     define\s+
                     (?P<name>\S+)\s*
@@ -36,13 +32,8 @@ class Parser:
         :type line: string
         :param dopen: the opening delimiter
         :type dopen: string
-<<<<<<< HEAD
-        :param close: the closing delimiter
-        :type close: string
-=======
         :param dclose: the closing delimiter
         :type dclose: string
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
         :rtype: string
 
         >>> p = Parser()
@@ -76,11 +67,7 @@ class Parser:
     def intern(self, value):
         '''
         Convert string representation of a number or word to its internal form
-<<<<<<< HEAD
-        Numbers MUST start with a digit (or +/-, as long as the remainder are numbers)
-=======
         Numbers MUST start with a digit (or +/-, as long as the remainder are digits)
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
         If the value is not a number it is returned as is
         Floating point numbers MUST have a decimal point
         Integers may be of the form (where 'd' is a decimal digit, h a hex  digit)
@@ -145,11 +132,7 @@ class Parser:
             base = 10
 
             # have a number
-<<<<<<< HEAD
-            if value.count(".") == 1 or value.lower().count("e") == 1:
-=======
             if value.count(".") == 1 or ((value.lower().count("e") == 1) and (value.lower()[1] != 'x')):
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
                 # have a float
                 return sign * float(value)
 
@@ -230,13 +213,9 @@ class Parser:
         >>> list(p.gobble('clear 1 ++ 2 --'))
         ['clear', 1, '++', 2, '--']
         """
-<<<<<<< HEAD
-
-=======
         if expr.endswith( "\n" ) :
             expr = expr[:-1] + " "
         
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
         while expr:
             char = expr[0]
 
@@ -250,10 +229,7 @@ class Parser:
 
             elif char == '"':
                 string, expr = self._consume_to(expr, '"', True)
-<<<<<<< HEAD
-=======
                 string       = string.replace("\\n", '\n').replace("\\r", "\r").replace("\\t","\t")
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
                 yield string
 
             elif char == "'":
@@ -295,11 +271,6 @@ class Parser:
             ['foo', 'bar']
 
         """
-<<<<<<< HEAD
-        match = self.parseDef.match(line)
-
-        if match is None:
-=======
         if line.endswith( "\n" ) :
             line = line[:-1] + " "
         
@@ -307,7 +278,6 @@ class Parser:
 
         if match is None:
             print "\nLine in error: ", line
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
             raise Exception('expect functions of the form "define name (: effect)? {{description}}? {definition}"')
 
         name, effect, description, definition = match.groups()

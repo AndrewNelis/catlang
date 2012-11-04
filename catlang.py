@@ -40,34 +40,12 @@
 
 __version__ = '0.7'
 
-<<<<<<< HEAD
-import sys
-=======
 import sys, platform
 import readline
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
 
 from cat.repl import REPL
 from cat.eval import CatEval
 
-<<<<<<< HEAD
-try:
-    from colorama import init, Fore
-    init(autoreset=True)
-
-    def colored(text, color=None):
-        if color:
-            fg_color = getattr(Fore, color.upper())
-        else:
-            fg_color = ''
-        return fg_color + text
-
-except ImportError:
-
-    def colored(text, _):  # NOQA
-        return text
-
-=======
 # set up to handle colored text to console
 if platform.system().lower() == 'windows' :
     try :
@@ -103,7 +81,6 @@ else :
     
         def colored(text, _):  # NOQA
             return text
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
 
 if __name__ == '__main__':
     cat = CatEval(output_fn=colored)

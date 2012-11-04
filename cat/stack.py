@@ -18,13 +18,9 @@ class Stack:
         """
         if initial is None:
             initial = []
-<<<<<<< HEAD
-        self._stack = deque(initial)
-=======
         
         self._stack = deque(initial)
         self._aux   = deque()
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
 
     def push(self, what, multi=False):
         """
@@ -54,8 +50,6 @@ class Stack:
         """
         return self._stack.pop()
 
-<<<<<<< HEAD
-=======
     def push_aux( self, what, multi=False ) :
         '''
         '''
@@ -73,7 +67,6 @@ class Stack:
         
         return [self._aux.pop() for _ in range(n)]
  
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
     def pop_list(self):
         """
             >>> s = Stack(['a,b,c'])
@@ -83,9 +76,6 @@ class Stack:
         item = self.pop()
 
         if isinstance(item, basestring):
-<<<<<<< HEAD
-            return [x for x in item.split(',') if x]
-=======
             item = item.strip()
             
             if item[0] in "[(" :
@@ -93,25 +83,16 @@ class Stack:
             
             else :
                 return [x for x in item.split(',') if x]
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
 
         elif isinstance(item, (list, tuple)):
             return item
 
         else:
-<<<<<<< HEAD
-            raise TypeError('Cannot pop list from top of stack: %r' % item)
-
-    def __repr__(self):
-        if not self._stack:
-            return '_empty_'
-=======
             return [item]
 
     def __repr__(self):
         if not self._stack:
             return '===> _empty_'
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
 
         return '===> %s' % ' '.join(repr(x) for x in self._stack)
 
@@ -177,11 +158,7 @@ class Stack:
             _empty_
         """
         self._stack.clear()
-<<<<<<< HEAD
-
-=======
     
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
     def clear_to(self, n):
         """
             >>> s = Stack([90, 40, 10, 1])
@@ -191,9 +168,6 @@ class Stack:
         """
         for _ in range(n):
             self._stack.pop()
-<<<<<<< HEAD
-
-=======
     
     def reverse( self ) :
         '''Reverses the order of elements in the stack'''
@@ -206,7 +180,6 @@ class Stack:
     def raw( self ) :
         return self._stack
     
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
     def to_list(self):
         return list(self._stack)
 
@@ -215,8 +188,6 @@ class Stack:
 
     def __setitem__(self, index, value):
         self._stack[index] = value
-<<<<<<< HEAD
-=======
 
     def format( self, alt_format=False ) :
         '''Format the stack contents for printing
@@ -247,4 +218,3 @@ class Stack:
         else :
             items = [str(x) for x in self._stack]
             return "===> " + " ".join(items)
->>>>>>> 07e8bdb338ec6a20356c761f0e0b188e87944d60
