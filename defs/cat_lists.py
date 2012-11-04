@@ -444,9 +444,9 @@ def get_at( cat ) :
     get_at : (list:base int:index -> list:base any:item_n)
     
     desc:
-        returns the nth item in a list
+        Returns the n-th item in a list. The list is not consumed.
         base: the basis list
-        index: the offset into the list (0..len(base))
+        index: the zero-based offset into the list (0..len(base))
         item_n: item = base[index]
         
         Example: ['a 'b 'c] list 1 get_at => ['a, 'b, 'c] 'b
