@@ -213,7 +213,9 @@ class Parser:
         >>> list(p.gobble('clear 1 ++ 2 --'))
         ['clear', 1, '++', 2, '--']
         """
-
+        if expr.endswith( "\n" ) :
+            expr = expr[:-1] + " "
+        
         while expr:
             char = expr[0]
 
@@ -269,6 +271,9 @@ class Parser:
             ['foo', 'bar']
 
         """
+        if line.endswith( "\n" ) :
+            line = line[:-1] + " "
+        
         match = self.parseDef.match(line)
 
         if match is None:
