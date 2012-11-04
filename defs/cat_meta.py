@@ -1,7 +1,7 @@
 # meta
 
 from cat.namespace import *
-import sys,re
+import sys,os,re
 from sets import Set
 from fnmatch import fnmatch
 from cat_tagExpr import TagExpr
@@ -91,54 +91,71 @@ def dumpdef( cat ) :
 @define(ns, 'info')
 def info( cat ) :
     '''
-    info : (-- -> --)
+    info : (string:namespace_name -> --)
     
     desc:
         Lists modules available for use and other bits of useful information
-        for the default user namespace.
+        for the specified namespace.
+        namespace_name: the name of the namespace to be examined. To examine
+            the system namespace use 'sys' as the name.
         
-        Example: info
+        Example: 'sys info
     tags:
         modules,words,instances,variables,links,files,info,modules
     '''
-    userNS = cat.ns.getUserNS()
-    i_c    = cat.ns.info_colour
+    if cat.stack.length() == 0 :
+        nsName = cat.ns.getUserNS()
+    
+    else :
+        nsName = cat.stack.pop()
+    
+    i_c = cat.ns.info_colour
     
     # sys.modules
-    keys   = sys.modules.keys()
-    keys.sort()
-    cat.output( "**sys.modules:", i_c )
-    cat.output( cat.ns._formatList( keys, across=4), i_c )
-    
-    # all user-defined words
-    keys = cat.ns.allWordNames()
-    keys.sort()
-    cat.output( "**user-defined words in '%s':" % userNS, i_c )
-    cat.output( cat.ns._formatList(keys), i_c )
-    
-    # all user-defined variable names
-    keys = cat.ns.allVarNames()
-    keys.sort()
-    cat.output( "**user-defined variables in '%s':" % userNS, i_c )
-    cat.output( cat.ns._formatList(keys), i_c )
-    
-    # all user-defined instances
-    keys = cat.ns.instNames()
-    keys.sort()
-    cat.output( "**user-defined instances in '%s':" % userNS , i_c )
-    cat.output( cat.ns._formatList(keys), i_c )
-    
-    # all user-defined files loaded
-    keys = cat.ns.allFileNames()
-    keys.sort()
-    cat.output( "**user-defined files loaded into '%s':" % userNS, i_c )
-    cat.output( cat.ns._formatList(keys), i_c )
-    
-    # all user-linked namespaces
-    keys = cat.ns.getLinks()
-    keys.sort()
-    cat.output( "**user-defined namespaces linked to '%s':" % userNS, i_c )
-    cat.output( cat.ns._formatList(keys), i_c )
+    if nsName == 'sys' :
+        keys   = sys.modules.keys()
+        keys.sort()
+        cat.output( "**sys.modules:", i_c )
+        cat.output( cat.ns._formatList( keys, across=3), i_c )
+        words = cat.ns.builtinWords()
+        words.sort()
+        cat.output( "**Standard (built-in) words:", i_c )
+        cat.output( cat.ns._formatList(words), i_c )
+        vars = cat.ns._nsDict['std'].allVarNames()
+        vars.sort()
+        cat.output( "**Global variables:", i_c )
+        cat.output( cat.ns._formatList(vars), i_c )
+
+    else :    
+        # words
+        keys = cat.ns.allWordNames( nsName )
+        keys.sort()
+        cat.output( "**Words defined in '%s':" % nsName, i_c )
+        cat.output( cat.ns._formatList(keys, across=3), i_c )
+        
+        # variable names
+        keys = cat.ns.allVarNames( nsName)
+        keys.sort()
+        cat.output( "**Variables defined in '%s':" % nsName, i_c )
+        cat.output( cat.ns._formatList(keys), i_c )
+        
+        # instances
+        keys = cat.ns.instNames( nsName )
+        keys.sort()
+        cat.output( "**Instances defined in '%s':" % nsName , i_c )
+        cat.output( cat.ns._formatList(keys), i_c )
+        
+        # files loaded
+        keys = cat.ns.allFileNames( nsName )
+        keys.sort()
+        cat.output( "**Files loaded '%s':" % nsName, i_c )
+        cat.output( cat.ns._formatList(keys), i_c )
+        
+        # linked namespaces
+        keys = cat.ns.getLinks( nsName )
+        keys.sort()
+        cat.output( "**Namespaces linked to '%s':" % nsName, i_c )
+        cat.output( cat.ns._formatList(keys), i_c )
 
 @define(ns, 'vars')
 def showVars( cat ) :
@@ -758,14 +775,25 @@ def fetch( cat, wrd=None ) :
     fetch  : (string:word -> --)
     
     desc:
-        Fetches and loads into the user's workspace the standard definition of the
-        word whose name is on top of the stack. The "word" may be of the form 'word1,word2,word3,...
+        Fetches and loads into the user's workspace, or a specified one one or more words.
+        A "word" may be of the form 'word1,word2,word3,...
         (e.g. 'test,other) or a list (e.g. ['test 'other] list)
-        The words may also be prefixed by <namespace>:  (e.g. 'core:modn) to fetch
-        the word from an existing namespace (e.g. 'core:modn fetch -- fetches word 'modn'
-        from namespace 'core'). When present, dependencies are honored and the antecedent
+        The words may also be prefixed by <namespace>:  (e.g. 'core:modn) to indicate
+        thaT the FETCHED word is to be placed in <namespace> (e.g. 'core').
+        The order of searching is:
+            existing namespaces (copy the file into targeted namespace)
+            standard Cat definition files (definition is compiled into the targeted namespace)
+            user-defined Cat definition files (as above)
+        The 'catlang.cfg' file has an option defining where the standard Cat definition
+        files are to be found. The user may add one or more other paths to the
+        definition. Entries must be comma separated and no spaces are allowed.
+        When indicated in the definition, dependencies are honored and the antecedent
         definitions are loaded as well.
-        word: the name of the word to fetch from the files in the 'global:CatDefs' directory
+        NOTE: any word in an unlinked namespace can be accessed directly using the
+                format <word's namespace>:<word name> and thus need not be copied to user's
+                default namespace, nor must the namespace containing the word be
+                linked to the user's default namespace.
+        word: the name of the word (or list of words) to fetch 
         
         Example: 'abba fetch
     tags:
@@ -773,137 +801,179 @@ def fetch( cat, wrd=None ) :
     '''
     from glob import iglob
     
-    # check to see if we are coming from 'loadNS'
-    if cat.ns.targetNS == '' :
-        tgtNS = cat.ns.getUserNS()
-    
-    else :
-        tgtNS = cat.ns.targetNS
-    
     parseDeps = re.compile( r'.*deps:\s*(\S+)', re.DOTALL )
+    define    = re.compile( r'^\s*define\s+(\S+)(\s*\{|\s)' )
+    paths     = cat.ns.config.get( 'paths', 'catdefs' ).split( "," )
     
+    # support functions
+    def copyTo( text, char ) :
+        '''Copies the text from text[0] to the first occurrence of 'char'.
+        :param text: the text to be "scanned"
+        :type text: string
+        :param char: the "scan" terminating character
+        :type char: character
+        :rtype: a tuple of the form (scanned_text, remaining_text)
+        '''
+        frag = ""
+        ix = text.find( char )
+        
+        if ix == -1 :
+            return ( text, "" )
+        
+        return ( text[:ix + 1], text[ix+ 1:] )
+    
+    def search_namespace( word , tgtNS ) :
+        if cat.ns.isWord( word )[0] :   # searches 'std' and 'user'
+            return True
+        
+        defined, wd, nmspc = cat.ns.getWordAnyNS( word )
+        
+        if defined :
+            cat.ns.copyWord( word, nmspc, tgtNS )
+            process_dependencies( word, tgtNS )
+            return True
+        
+        return False
+    
+    def process_dependencies( word, nspc ) :
+        doc = cat.ns.getWord(word, nspc)
+        
+        if not doc :
+            return 
+        
+        mo = parseDeps.match( doc[1][1] )
+        
+        if mo :
+            deps = mo.group(1).split( "," )
+            
+            for i in range( len(deps) ) :
+                deps[i] = nspc + ":" + deps[i]
+            
+            deps = ",".join( deps )
+            cat.stack.push( deps )
+            cat.ns.exeqt( 'fetch' )
+        
+    def search_file( fileName, word, tgtNS ) :
+        fd         = open( fileName, 'r' )
+        expression = ""
+        foundWord  = False
+        
+        for line in fd:
+            temp = line.strip()
+            
+            if temp == "" or temp.startswith( ("//", "#") ) :
+                continue
+            
+            # look for a line starting with "define"
+            if not foundWord :
+                mo = define.match( temp )
+                
+                if mo and mo.group(1) == word :
+                    foundWord = True
+                
+                else :
+                    continue
+            
+            # 'else' won't work here because we need to include the 'define' line
+            if foundWord :
+                # collect all up to a single closing '}'
+                # strip line-end comments first
+                ix = line.rfind( "//" )
+                
+                if ix == - 1 :
+                    ix = line.rfind( "#" )
+                
+                if ix > 0 :
+                    line = line[:ix]
+                
+                expression += line
+                
+                if not temp.endswith( "}}" ) and temp.endswith( "}" ) :
+                    break
+            # end of for loop over lines in file
+        
+        fd.close()
+        
+        # compile the definition if there is one
+        if foundWord :
+            # first replace newlines in the definition code with spaces
+            ix   = expression.rfind( "{" )  # find start of definition
+            lhs  = expression[:ix]          # part preceding definition
+            rhs  = expression[ix:]          # definition
+            expr = ""
+            
+            # scan over characters looking for special cases
+            while rhs :
+                c   = rhs[0]
+                rhs = rhs[1:]
+                
+                if c == '"' :   # starting a quote
+                    expr += c
+                    res   = copyTo( rhs, '"' )
+                    expr += res[0]
+                    rhs   = res[1]
+                
+                elif c == "'" :     # starting a string constant
+                    expr += c
+                    res   = copyTo( rhs, " " )
+                    expr += res[0]
+                    rhs   = res[1]
+                
+                elif c == "\n" :    # the dreaded newline
+                    expr += " "
+                
+                else :
+                    expr += c
+            
+            # now parse the definition
+            cat.define( lhs + expr, tgtNS )
+            process_dependencies( word, tgtNS )
+            return True
+        
+        else :
+            return False
+    
+    # ------- main code starts here -------
+    # check to see if we are coming from 'loadNS'
     if wrd :
         words = wrd
     
     else :
         words = cat.stack.pop_list()
     
+    # find definition for each word
     for word in words :
-        # make sure it is not a standard method
-        if cat.ns.isWord( word )[0] :
+        tgtNS = cat.ns.targetNS if cat.ns.targetNS else cat.ns.getUserNS()
+        
+        # check for stipulated namespace
+        if word.count( ":" ) == 1 :
+            tgtNS, word = word.split( ":" )
+            
+            if not cat.ns.isNS( tgtNS ) :
+                cat.ns.createNS( tgtNS )
+        
+        # look in defined namespaces first
+        found = search_namespace( word, tgtNS )
+        
+        if found :
             continue
         
-        # look first in the linked namespaces, checking first for a special form
-        if word.count( ":" ) == 1 :
-            # special form: <namespace>:<word>
-            ns, func = word.split( ":" )
+        # not in a namespace -- check definition files
+        for path in paths :
+            if found :
+                break   # next word
             
-            if cat.ns.isNS(ns) :
-                if cat.ns.isWord(func, ns)[0] :
-                    cat.ns.copyWord( func, ns )
-                    found = True
-                    
-                    # have to take care of any dependencies
-                    doc = cat.ns.getWord(func, ns)[1]
-                    mo  = parseDeps.match( doc )
-                    
-                    if mo :
-                        deps = mo.group(1).split(",")
-                        
-                        for dep in deps :
-                            cat.stack.push( dep )
-                            cat.ns.execqt( 'fetch' )
-                    break
-                
-                else :
-                    raise ValueError, "fetch: No word called '%s' in namespace '%s'" % (finc, ns)
+            path += "*.cat"
             
-            else :
-                raise ValueError, "fetch: No namespace called '%s'" % ns
-        
-        else :
-            # not a special form, search namespaces
-            found = False
-            res   = cat.ns.getWordAnyNS( word )
-            
-            if res[0] :
-                    found = True
-                    # have to take care of any dependencies
-                    doc = cat.ns.getWord(func, ns)[1]
-                    mo  = parseDeps.match( doc )
-                    
-                    if mo :
-                        deps = mo.group(1).split(",")
-                        
-                        for dep in deps :
-                            cat.stack.push( dep )
-                            cat.ns.execqt( 'fetc' )
-
-        # not in a namespace?
-        if not found :
-            # not present in the name space dictionaries, search the standard definition files
-            path = cat.ns.getVar( 'global:CatDefs' )
-            
-            if path[0] :
-                path = path[1] + "*.cat"
-            
-            else :
-                raise ValueError, "The global 'CatDefs' is undefined"
-            
-            # escape characters in theWord that are interpreted by "re"
-            letters = [ x for x in word ]
-            
-            for i in range(len(letters)) :
-                c = letters[i]
-                
-                if c in ".[]{}^$*?()+-|" :  # regular expression characters
-                    letters[i] = "\\" + c
-            
-            theWord    = "".join( letters )
-            expression = ""
-            
-            # search the standard definition files
-            define = re.compile( r'^\s*define\s+(%s)\s' % theWord )
-            inDef  = False
-            
+            # search the definition files
             for file in iglob( path ) :
-                if inDef :
-                    break
+                if found :
+                    break   # next path
                 
-                fd = open( file, 'r' )
-                
-                for line in fd :
-                    temp = line.strip()
-                    
-                    if temp == "" :
-                        continue
-                    
-                    if temp.startswith( "//" ) or temp.startswith( "#" ) :
-                        continue
-                    
-                    # look for line starting with "define"
-                    if not inDef and define.match( temp ) :
-                        inDef = True
-                        
-                    if inDef :
-                        # collect all up to a single closing }
-                        ix = line.rfind( "//" )
-                        
-                        if ix > 0 :
-                            line = line[:ix]
-                        
-                        expression += line
-                        
-                        if not temp.endswith( "}}" ) and temp.endswith( "}" ) :
-                            break
-                
-                fd.close()
-            
-            if inDef :
-                cat.define( expression, tgtNS )
-            
-            else :
-                raise ValueError, "fetch: No definition can be found for " + word
+                found = search_file( file, word, tgtNS )
+        
+        if not found :
+            raise ValueError, "fetch: cannot find the word '%s'" % word
 
 @define(ns, 'load')
 def load( cat, force=False, nmsp='' ) :
@@ -986,6 +1056,9 @@ def load( cat, force=False, nmsp='' ) :
             
         if not force and cat.ns.hasFile(fileName, tgtNS) :
             continue
+        
+        if not os.access(fileName, os.F_OK) :
+            raise Exception, "load: no file called '%s'" % fileName
         
         fd     = open( fileName, 'r' )
         buffer = ""
@@ -1089,15 +1162,15 @@ def loadAllDefs( cat ) :
     tags:
         namespaces,definitions,file,script
     '''
-    loadFile = cat.ns.getVar('global:CatDefs')
+    paths = cat.ns.config.get( 'paths', 'catdefs' ).split( "," )
     
-    if loadFile[0] :
-        loadFile = loadFile[1] + "everything.cat"
-        cat.stack.push( loadFile )
-        load( cat )
-    
-    else :
-        raise ValueError, "Cannot find definition for 'CatDefs'"
+    for path in paths :
+        loadFile = path + "everything.cat"
+        
+        if os.access(loadFile, os.F_OK) :
+            cat.ns.addVar( 'global:CatDefs', path )
+            cat.stack.push( loadFile )
+            load( cat )
 
 @define(ns, 'import')
 def catImport( cat ) :
