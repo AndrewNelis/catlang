@@ -1,6 +1,7 @@
 # lists
 
 from cat.namespace import *
+
 ns = NameSpace()
 
 @define(ns, 'sort')
@@ -501,6 +502,125 @@ def swap_at( cat ) :
     lst[n] = obj
     cat.stack.push( x )
 
+@define(ns, 'split_at')
+def split_list( cat ) :
+    '''
+    split_at : (list:src int:offset -> list:left list:right)
+    
+    desc:
+        Splits a list into two at a specific element. The resulting two lists
+        are pushed onto the stack. Zero-based indexing is used.
+        src: a list of n elements
+        offset: the offset at which to split the list (zero-based)
+        left: the list consisting of elements 0 through offset - 1
+        right: the list consisting of elements offset through n - 1
+        
+        Example: [1 3 5 7 9] list 2 split => [1, 3] [ 5, 7, 9]
+                 [1 3 5 7 9] list 0 split => [] [1, 3, 5, 7 ,9]
+                 [1 3 5 7 9] list 6 split => [1, 3, 5, 7 ,9] []
+    tags:
+        list,split
+    '''
+    offset, lst = cat.stack.pop_2()
+    n           = int( offset )
+    
+    if n >= len(lst) :
+        cat.stack.push( lst )
+        cat.stack.push( [] )
+    
+    else :
+        cat.stack.push( lst[:n] )
+        cat.stack.push( lst[n:] )
+
+@define(ns, 'sub_list')
+def sub_list( cat ) :
+    '''
+    sub_list : (list:src int:start int:end -> list:sublist)
+    
+    desc:
+        Pushes a segment of a list onto the stack
+        src: the list to be sliced
+        start: the starting offset (zero-based)
+        end: the end barrier (zero-based)
+        result: the extracted sublist
+        
+        Example: [1 2 3 4 5] list 2 5 sub_list => [3, 4, 5]
+    tags:
+        list,slice,subsequence
+    '''
+    end, start, lst = cat.stack.pop_n( 3 )
+    cat.stack.push( lst[int(start) : int(end)] )
+
+@define(ns, 'slice')
+def slice_list( cat ) :
+    '''
+    slice : (list:src string:pattern -> list:result)
+    
+    desc:
+        Extracts elements of a list according to a pattern. The pattern
+        formats are:
+            comma-separated list of offsets: '2,1,4,5
+            or a Pythonesque list slicing pattern:
+                '[:]           -- copy entire list
+                '[::]          -- copy entire list
+                '[<n>:]        -- copy from offset <n> to end of list
+                '[<n>::]       -- copy from offset <n> to end of list
+                '[:<n>]        -- copy from start up to element <n> of list
+                '[:<n>:]       -- copy from start up to element <n> of list
+                '[<n>:<m>]     -- copy list starting with element <n> up to element <m>
+                '[<n>:<m>:]    -- copy list starting with element <n> up to element <m>
+                '[<n>:<m>:<s>] -- copy every <s>-th element starting at offset <n> up to offset <m>
+                '[::<s>]       -- copy from start of list every <s>-th list element
+                                    if <s> is negative, the copying is done right to left to the head of the list
+                '[<n>::<s>]    -- copy from offset <n> every <s>-th element to the end of the list
+                                    if <s> is negative, the copying is done right to left to the head of the list
+                '[:<m>:<s>]    -- copy from start of list every <s>-th element up to element at offset <m>
+                                    if <s> is negative, the copying is done right to left to the head of the list
+        src: list of elements
+        pattern: one of the list-splitting patterns
+        result: the list resulting from the splitting process
+        
+        Example: [1 2 3 4 5] list '[::-1] slice      => [5, 4, 3, 2, 1]
+                 [1 2 3 4 5] list '[1:3]  slice      => [2, 3]
+                 [1 2 3 4 5] list '0,2,1,4,3,2 slice => [1, 3, 2, 5, 4, 3]
+    tags:
+        list,slice
+    '''
+    pat, lst = cat.stack.pop_2()
+    
+    if pat.count(",") > 0 :
+        res = [ lst[int(x)] for x in pat.split(",") ]
+        cat.stack.push( res )
+        return
+    
+    elif pat.count(":") < 3 :
+        strLst = str( lst )
+        l      = eval( strLst + pat )
+        cat.stack.push( l )
+    
+    else :
+        cat.stack.push( lst )
+        raise ValueError, "slice: bad syntax in '%s' " % pat
+
+@define(ns, 'append')
+def append_list( cat ) :
+    '''
+    append : (list:left list:right -> list:left+right)
+    
+    desc:
+        Appends the right hand list to the left hand one and pushes
+        the concatenation onto the stack.
+        left: the left hand list
+        right: the right hand list
+        left+right: the concatenated list (in Python: left + right)
+        
+        Example: [1 2] list [3 4] list append => [1, 2, 3, 4]
+    tags:
+        list,append
+    '''
+    right, left = cat.stack.pop_2()
+    cat.stack.push( list(left) + list(right) )
+
 @define(ns, 'empty')
 def empty( cat ) :
     '''
@@ -881,6 +1001,48 @@ def map( cat ):
         cat.stack.push( element )
         cat.eval( func )
         results.append( cat.stack.pop() )
+    
+    cat.stack.push( results )
+
+@define(ns, 'map_selection')
+def map_selection( cat ) :
+    '''
+    map_selection : (list:base function:transform string|list:indices -> list:new)
+    
+    desc:
+        Creates a list from another by transforming each selected value using
+        the supplied function. List elements that are not selected for transformation
+        are copied intact.
+        base: the source list
+        transform: the transformation function taking each selected list element in turn
+                    and transforming it into a new element (or none)
+        indices: a list of zero-based indices of list elements to be transformed.
+                 May be a string of comma-separated indices, or a list of integer indices.
+        new: the list resulting from the transform function
+        
+        Example: [1 3 5 7 9 11] list [math.sqrt] '2,3,5 map_selection => 
+                    [1, 3, 2.23606797749979, 2.6457513110645907, 9, 3.3166247903554]
+    tags:
+        lists,map,function
+    '''
+    indices        = cat.stack.pop_list()
+    func, elements = cat.stack.pop_2()
+    
+    # Make a list of selected indices
+    indices = [ int(x) for x in indices ]
+    
+    # Evaluate the function with each of the selected elements.
+    results  = []
+    
+    for i in range( len(elements) ) :
+        if i in indices :
+            # Push selected value onto the stack and evaluate the function.
+            cat.stack.push( elements[i] )
+            cat.eval( func )
+            results.append( cat.stack.pop() )
+        
+        else :
+            results.append( elements[i] )
     
     cat.stack.push( results )
 
