@@ -606,6 +606,7 @@ def whereis( cat ) :
     
     theWord = cat.stack.pop()
     source  = 'undefined'
+    regex   = re.compile( r'^\s*define\s+(\S+)(\s*\{|\s)' )
     defined = False
     search  = cat.ns.getWordAnyNS( theWord )
     
@@ -617,51 +618,43 @@ def whereis( cat ) :
             source = search[2]
     
     else :
-        path  = cat.ns.getVar('global:CatDefs')[1]
-        path += "*.cat"
+        paths = cat.ns.config.get('paths', 'catdefs').split( "," )
         
-        # escape characters in theWord that are interpreted by "re"
-        letters = [ x for x in theWord ]
-        
-        for i in range(len(letters)) :
-            c = letters[i]
+        for path in paths :
+            path += "*.cat"
             
-            if c in ".[]{}^$*?()+-|" :  # regular expression characters
-                letters[i] = "\\" + c
-        
-        theWord = "".join( letters )
-        
-        # search the standard definition files
-        regex = re.compile( r'^\s*define\s+(%s)' % theWord )
-        found = False
-        
-        for file in iglob( path ) :
-            if found :
-                break
+            # search the standard definition files
+            found = False
             
-            fd = open( file, 'r' )
-            
-            for line in fd :
-                if regex.match( line.strip() ) :
-                    source = file
-                    found  = True
+            for file in iglob( path ) :
+                if found :
                     break
                 
-            fd.close()
-        
+                fd = open( file, 'r' )
+                
+                for line in fd :
+                    mo = regex.match( line.strip() )
+                    
+                    if mo and mo.group(1) == theWord :
+                        source = file
+                        found  = True
+                        break
+                    
+                fd.close()
+            
         if not found :
             search = cat.ns.getVarAnyNS( theWord, triplet=True )
             
             if search[0] :
                 source  = search[2]
-                theWord = "variable " + theWord
+                theWord = "variable: " + theWord
             
             else :
                 search = cat.ns.getInstAnyNS( theWord )
                 
                 if search[0] :
                     source  = search[2]
-                    theWord = "instance " + theWord
+                    theWord = "instance: " + theWord
                 
                 else :
                     source = 'undefined'
@@ -1156,11 +1149,12 @@ def loadAllDefs( cat ) :
     
     desc:
         Load all definitions (in CatDefs directory) into their corresponding namespaces
-        Accesses definition files in directory pointed to by 'global:CatDefs'
+        Accesses definition files in directories pointed to by 'paths:catdefs' in the
+        catlang configuration file.
         
         Example: load_defs
     tags:
-        namespaces,definitions,file,script
+        namespaces,definitions,file,script,load,configuration
     '''
     paths = cat.ns.config.get( 'paths', 'catdefs' ).split( "," )
     
@@ -1171,6 +1165,8 @@ def loadAllDefs( cat ) :
             cat.ns.addVar( 'global:CatDefs', path )
             cat.stack.push( loadFile )
             load( cat )
+    
+    cat.ns.delWord( 'global:CatDefs' )
 
 @define(ns, 'import')
 def catImport( cat ) :
