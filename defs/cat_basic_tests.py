@@ -166,6 +166,9 @@ tests = (
     ('<-aux', [1, 2, 3]),
     ('3 n->aux', []),
     ('3 n<-aux', [1, 2, 3]),
+    ('clear "test text" 20 "." center', ['.....test text......']),
+    ('clear "test text" 20 "." l_justify', ['test text...........']),
+    ('clear "test text" 20 "." r_justify', ['...........test text']),
     ('clear "***end of tests***" "green" writeln', [])
 )
 
