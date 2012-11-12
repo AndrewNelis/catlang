@@ -455,7 +455,7 @@ def tag_search( cat ) :
         words = list( words )
         words.sort()
         cat.output( "Words matching tag expression '%s':" % expr, i_c )
-        cat.output( cat.ns._formatList(words), i_c )
+        cat.output( cat.ns._formatList(words, across=3), i_c )
 
 @define(ns, 'show_tags')
 def show_tags( cat ) :
