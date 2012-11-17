@@ -2,13 +2,12 @@
 
 from cat.namespace import *
 import sys,os,re
-from sets import Set
 from fnmatch import fnmatch
 from cat_tagExpr import TagExpr
 
 ns      = NameSpace()
 mapTags = { }
-letters = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+letters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 
 @define(ns, 'doc')
 def show_doc( cat ) :
@@ -318,7 +317,7 @@ def _tagMap( cat ) :
     global mapTags
     
     # build the tag-mapping directory if necessary
-    mapTags  = { 'universe' : Set() }
+    mapTags  = { 'universe' : set() }
     findTags = re.compile( r'tags:\s*(\S+)' )
     
     # first the built-in words
@@ -339,7 +338,7 @@ def _tagMap( cat ) :
                 
                 # tag is either already in dict or needs to be inserted
                 if tag not in mapTags:
-                    mapTags[tag] = Set( [word] )  # new tag entry
+                    mapTags[tag] = set( [word] )  # new tag entry
                 
                 else :
                     mapTags[tag].add( word )    # existing tag entry
@@ -369,7 +368,7 @@ def _tagMap( cat ) :
                     tag = tag.lower()
                     
                     if tag not in mapTags:
-                        mapTags[tag] = Set( [word] )
+                        mapTags[tag] = set( [word] )
                     
                     else :
                         mapTags[tag].add( word )
@@ -391,7 +390,7 @@ def _globAnalysis( text, dict_ ) :
     items = text1.strip().split( " " )
     
     for glob in items :
-        if len(Set(glob) - letters) > 0 :
+        if len(set(glob) - letters) > 0 :
             tags = []
             
             for key in dict_ :
@@ -994,7 +993,8 @@ def load( cat, force=False, nmsp='' ) :
         if temp == "" or temp.startswith( ('//','#') ) :
             return ""
         
-        ix = temp.rfind( '//' )
+        temp =  text.rstrip()
+        ix   = temp.rfind( '//' )
         
         if ix > 0 :
             temp = temp[:ix]
@@ -1060,7 +1060,7 @@ def load( cat, force=False, nmsp='' ) :
         
         for line in fd :
             lineNo += 1
-            temp    = stripComments( line.strip() )
+            temp    = stripComments( line )
             
             if not temp :
                 continue
