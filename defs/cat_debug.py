@@ -44,7 +44,7 @@ def dumpStack( cat ) :
         
         Example: dump_stack
     tags:
-        debug,console,stack,dump
+        debug,console,stack,dump,display
     '''
     cat.output( str(cat.stack), cat.ns.info_colour )
 
