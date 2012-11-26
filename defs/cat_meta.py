@@ -663,19 +663,25 @@ def whereis( cat ) :
 @define(ns, 'help')
 def _help( cat ) :
     '''
-    help : (string:name -> --)
+    help : (string:name | <empty stack> -> --)
     
     desc:
         Searches user namespaces for help on 'name' (combination of 'doc' and 'def')
         If not a built-in or user-defined word, the Python help system is invoked for
         the object whose name is on top of the stack.
+        If there is nothing on the stack, general help for the Cat language is invoked.
         'name': string may be of the form <namespace>:<name> or <name>.<name>...
         
         Example: 'swap help
                  'math help
+                 'math.cos help
     tags:
         console,help,display,help
     '''
+    if cat.stack.length() == 0 :
+        # display general help (in browser?)
+        raise ValueError, "Sorry, general help not yet available"
+    
     name = cat.stack.pop()
     i_c  = cat.ns.info_colour
     
