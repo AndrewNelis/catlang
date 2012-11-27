@@ -680,7 +680,10 @@ def _help( cat ) :
     '''
     if cat.stack.length() == 0 :
         # display general help (in browser?)
-        raise ValueError, "Sorry, general help not yet available"
+        import webbrowser
+        helpPath = cat.ns.config.get( 'paths', 'browser' )
+        webbrowser.open( helpPath )
+        return
     
     name = cat.stack.pop()
     i_c  = cat.ns.info_colour
