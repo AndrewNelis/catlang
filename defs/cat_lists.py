@@ -319,6 +319,25 @@ def first( cat ) :
     '''
     cat.stack.push( cat.stack.peek()[0] )
 
+@define(ns, 'last')
+def last( cat ) :
+    '''
+    last : (list:src -> list:src src[n])
+    
+    desc:
+        The last member of the list at [0] is pushed onto the stack
+        the source list is unaltered
+        src: the source list
+        
+        Example: [1 2 3] list last => [1, 2, 3] 3
+                 'abc last => 'abc 'c
+    tags:
+        lists,last
+    '''
+    lst = cat.stack.peek()
+    n   = len( lst )
+    cat.stack.push( lst[n - 1] )
+
 @define(ns, 'rest,tail')
 def rest( cat ) :
     '''
