@@ -24,8 +24,12 @@ ns = NameSpace()
 @define(ns, 'write')
 def write( cat ) :
     '''
-    write : (string:text string:color -> --)
+    if use_colour option is true:
+        write : (string:text string:color -> --)
     
+    else:
+        write : (string:text -> --)
+        
     desc:
         outputs the text representation of a value to the console in the specified color
         text: the text to be output to the console
@@ -38,15 +42,23 @@ def write( cat ) :
                 'red'
                 'white'
                 'yellow'
-              If the color string is empty (i.e. "") then 'black' is assumed
+                'black'
         
         Example: "Two letter country code: " 'magenta write
     tags:
         console,text,color,output,write,prompt
     '''
-    color, obj = cat.stack.pop_2()
+    if cat.ns.config.getboolean( 'display', 'use_colour' ) :
+        color, obj = cat.stack.pop_2()
     
-    if not color :
+        if not color :
+            color = None
+        
+        elif color == 'black' :
+            color = None
+        
+    else :
+        obj   = cat.stack.pop()
         color = None
     
     if isinstance(obj, (list, tuple)) :
@@ -67,8 +79,13 @@ def write( cat ) :
 @define(ns, 'writeln,print')
 def writeln( cat ) :
     '''
-    writeln : (string:text string:color -> --)
-    print   : (string:text string:color -> --)
+    if use_colour option is true:
+        writeln : (string:text string:color -> --)
+        print   : (string:text string:color -> --)
+    
+    else :
+        writeln : (string:text -> --)
+        print   : (string:text -> --)
     
     desc:
         Outputs the text representation of a value to the console in the
@@ -83,16 +100,24 @@ def writeln( cat ) :
                 'red'
                 'white'
                 'yellow'
-              If the color string is empty (i.e. "") then 'black' is assumed
+                'black'
         
         Example: "Hello, world!" 'cyan writeln
                  "Hello, dolly!" 'grey print
     tags:
         console,display,text,color,output
     '''
-    color, obj = cat.stack.pop_2()
+    if cat.ns.config.getboolean( 'display', 'use_colour' ) :
+        color, obj = cat.stack.pop_2()
     
-    if not color :
+        if not color :
+            color = None
+        
+        elif color == 'black' :
+            color = None
+        
+    else :
+        obj   = cat.stack.pop()
         color = None
     
     if isinstance(obj, (list, tuple)) :
