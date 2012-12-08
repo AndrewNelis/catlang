@@ -1283,5 +1283,81 @@ def in_list( cat ) :
     needle, haystack = cat.stack.pop_2()
     cat.stack.push( needle in haystack )
 
+@define(ns, 'format_list')
+def dumpList( cat ) :
+    '''
+    format_list : (list:items -> string:formatted)
+    
+    desc:
+        Formats the list on top of the stack for printing. If the list is a named tuple
+        it is formatted in key = value form.
+        items: the list to be formatted
+        formatted: the formatted list
+        
+        Example: [1 2  'a 'b] list format_list 'green writeln =>
+                    1
+                    2
+                    'a
+                    'b
+    tags:
+        list,tuple,format
+    '''
+    def pprintDict( dict, indent=4, lvl=0 ) :
+        spcs = ' ' * (indent * lvl)
+        txt  = ''
+        
+        for key in dict:
+            val = dict[key]
+            
+            if isinstance(val, dict) :
+                txt += "%s%s:\n" % (spcs, key)
+                txt += pprintDict( val, indent, lvl+1 )
+            
+            else :
+                txt += "%s%s: %s\n" % (spcs, key, str(val))
+        
+        return txt
+    
+    def formatList( theList, indent, lvl ) :
+        if not isinstance(theList, (list, tuple)) :
+                    theList = [ theList ]
+        
+        txt = ""
+        
+        # check for namedtuple
+        if hasattr( theList, '_fields' ) :
+            d = theList._asdict()
+            
+            for key in d.keys() :
+                item = d[key]
+                
+                if isinstance(item, (list, tuple)) :
+                    indent += 1
+                    txt    += key + " = " + formatList( item, indent )
+                    indent -= 1
+                
+                elif isinstance(item, dict) :
+                    txt +=  key + " = " + pprintDict( item, indent ) + "\n"
+                
+                else :
+                    txt += "   " * indent + key + " = " + repr(item) + "\n"
+        
+        else :
+            for item in theList :
+                if isinstance(item, (list, tuple)) :
+                    indent += 1
+                    txt    += formatList( item, indent )
+                    indent -= 1
+                
+                elif isinstance(item, dict) :
+                    txt += pprintDict( item, indent ) + "\n"
+                
+                else :
+                    txt += "   " * indent + repr(item) + "\n"
+        
+        return txt
+    
+    cat.stack.push( formatList(cat.stack.pop(), 1, 0) )
+
 def _returnNS() :
     return ns
