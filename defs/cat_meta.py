@@ -2,13 +2,12 @@
 
 from cat.namespace import *
 import sys,os,re
-from sets import Set
 from fnmatch import fnmatch
 from cat_tagExpr import TagExpr
 
 ns      = NameSpace()
 mapTags = { }
-letters = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+letters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 
 @define(ns, 'doc')
 def show_doc( cat ) :
@@ -318,7 +317,7 @@ def _tagMap( cat ) :
     global mapTags
     
     # build the tag-mapping directory if necessary
-    mapTags  = { 'universe' : Set() }
+    mapTags  = { 'universe' : set() }
     findTags = re.compile( r'tags:\s*(\S+)' )
     
     # first the built-in words
@@ -339,7 +338,7 @@ def _tagMap( cat ) :
                 
                 # tag is either already in dict or needs to be inserted
                 if tag not in mapTags:
-                    mapTags[tag] = Set( [word] )  # new tag entry
+                    mapTags[tag] = set( [word] )  # new tag entry
                 
                 else :
                     mapTags[tag].add( word )    # existing tag entry
@@ -369,7 +368,7 @@ def _tagMap( cat ) :
                     tag = tag.lower()
                     
                     if tag not in mapTags:
-                        mapTags[tag] = Set( [word] )
+                        mapTags[tag] = set( [word] )
                     
                     else :
                         mapTags[tag].add( word )
@@ -391,7 +390,7 @@ def _globAnalysis( text, dict_ ) :
     items = text1.strip().split( " " )
     
     for glob in items :
-        if len(Set(glob) - letters) > 0 :
+        if len(set(glob) - letters) > 0 :
             tags = []
             
             for key in dict_ :
@@ -455,7 +454,7 @@ def tag_search( cat ) :
         words = list( words )
         words.sort()
         cat.output( "Words matching tag expression '%s':" % expr, i_c )
-        cat.output( cat.ns._formatList(words), i_c )
+        cat.output( cat.ns._formatList(words, across=3), i_c )
 
 @define(ns, 'show_tags')
 def show_tags( cat ) :
@@ -606,6 +605,7 @@ def whereis( cat ) :
     
     theWord = cat.stack.pop()
     source  = 'undefined'
+    regex   = re.compile( r'^\s*define\s+(\S+)(\s*\{|\s)' )
     defined = False
     search  = cat.ns.getWordAnyNS( theWord )
     
@@ -617,51 +617,43 @@ def whereis( cat ) :
             source = search[2]
     
     else :
-        path  = cat.ns.getVar('global:CatDefs')[1]
-        path += "*.cat"
+        paths = cat.ns.config.get('paths', 'catdefs').split( "," )
         
-        # escape characters in theWord that are interpreted by "re"
-        letters = [ x for x in theWord ]
-        
-        for i in range(len(letters)) :
-            c = letters[i]
+        for path in paths :
+            path += "*.cat"
             
-            if c in ".[]{}^$*?()+-|" :  # regular expression characters
-                letters[i] = "\\" + c
-        
-        theWord = "".join( letters )
-        
-        # search the standard definition files
-        regex = re.compile( r'^\s*define\s+(%s)' % theWord )
-        found = False
-        
-        for file in iglob( path ) :
-            if found :
-                break
+            # search the standard definition files
+            found = False
             
-            fd = open( file, 'r' )
-            
-            for line in fd :
-                if regex.match( line.strip() ) :
-                    source = file
-                    found  = True
+            for file in iglob( path ) :
+                if found :
                     break
                 
-            fd.close()
-        
+                fd = open( file, 'r' )
+                
+                for line in fd :
+                    mo = regex.match( line.strip() )
+                    
+                    if mo and mo.group(1) == theWord :
+                        source = file
+                        found  = True
+                        break
+                    
+                fd.close()
+            
         if not found :
             search = cat.ns.getVarAnyNS( theWord, triplet=True )
             
             if search[0] :
                 source  = search[2]
-                theWord = "variable " + theWord
+                theWord = "variable: " + theWord
             
             else :
                 search = cat.ns.getInstAnyNS( theWord )
                 
                 if search[0] :
                     source  = search[2]
-                    theWord = "instance " + theWord
+                    theWord = "instance: " + theWord
                 
                 else :
                     source = 'undefined'
@@ -671,19 +663,28 @@ def whereis( cat ) :
 @define(ns, 'help')
 def _help( cat ) :
     '''
-    help : (string:name -> --)
+    help : (string:name | <empty stack> -> --)
     
     desc:
         Searches user namespaces for help on 'name' (combination of 'doc' and 'def')
         If not a built-in or user-defined word, the Python help system is invoked for
         the object whose name is on top of the stack.
+        If there is nothing on the stack, general help for the Cat language is invoked.
         'name': string may be of the form <namespace>:<name> or <name>.<name>...
         
         Example: 'swap help
                  'math help
+                 'math.cos help
     tags:
         console,help,display,help
     '''
+    if cat.stack.length() == 0 :
+        # display general help (in browser?)
+        import webbrowser
+        helpPath = cat.ns.config.get( 'paths', 'browser' )
+        webbrowser.open( helpPath )
+        return
+    
     name = cat.stack.pop()
     i_c  = cat.ns.info_colour
     
@@ -1001,7 +1002,8 @@ def load( cat, force=False, nmsp='' ) :
         if temp == "" or temp.startswith( ('//','#') ) :
             return ""
         
-        ix = temp.rfind( '//' )
+        temp =  text.rstrip()
+        ix   = temp.rfind( '//' )
         
         if ix > 0 :
             temp = temp[:ix]
@@ -1067,7 +1069,7 @@ def load( cat, force=False, nmsp='' ) :
         
         for line in fd :
             lineNo += 1
-            temp    = stripComments( line.strip() )
+            temp    = stripComments( line )
             
             if not temp :
                 continue
@@ -1156,11 +1158,12 @@ def loadAllDefs( cat ) :
     
     desc:
         Load all definitions (in CatDefs directory) into their corresponding namespaces
-        Accesses definition files in directory pointed to by 'global:CatDefs'
+        Accesses definition files in directories pointed to by 'paths:catdefs' in the
+        catlang configuration file.
         
         Example: load_defs
     tags:
-        namespaces,definitions,file,script
+        namespaces,definitions,file,script,load,configuration
     '''
     paths = cat.ns.config.get( 'paths', 'catdefs' ).split( "," )
     
@@ -1171,6 +1174,8 @@ def loadAllDefs( cat ) :
             cat.ns.addVar( 'global:CatDefs', path )
             cat.stack.push( loadFile )
             load( cat )
+    
+    cat.ns.delWord( 'global:CatDefs' )
 
 @define(ns, 'import')
 def catImport( cat ) :

@@ -1,7 +1,5 @@
 # parse a logical expression that uses tags/Sets as data
 
-from sets import Set
-
 class TagExpr( object ) :
     '''Parses a logical expression using tags
     <expr> ::= <term> <term_tail>
@@ -14,8 +12,8 @@ class TagExpr( object ) :
     The tags dictionary: <tag name> : Set(<words having the tag name>)
     '''
     def __init__(self, mapTags ) :
-        self._mapTags = mapTags
-    
+            self._mapTags = mapTags
+        
     def parse( self, text ) :
         self._tokens = text.replace("(", " ( ").replace(")", " ) ").split()
         self._tokens.reverse()
@@ -29,7 +27,7 @@ class TagExpr( object ) :
         else :
             return None
     
-    def _isIdent( self, what ) :
+    def _isTag( self, what ) :
         '''The pseudotoken '<id>' indicates that the inputToken should
         be an identifier. This method is a very simple test for that condition.
         Note: all identifiers must be keys in the _mapTags dictionary.
@@ -43,26 +41,29 @@ class TagExpr( object ) :
         
         else :
             return False
-            
+    
+    def _nextToken( self ) :
+        '''Advances to the next input token'''
+        if len(self._tokens) :
+            self._lastInputToken = self._inputToken
+            self._inputToken     = self._tokens.pop()
+        
+        else :
+            self._lastInputToken = self._inputToken
+            self._inputToken     = '<END>'
+
     def _match( self, what ) :
         '''Sees if the current inputToken matches the argument. If it does match
-        the next input token is acquired and True is returned. If the tokens
+        the next input token is acquired and True is returned. When the tokens
         list is empty, the special pseudotoken '<END>' is returned. The pseudotoken '<id>'
         signals that an identifier is required. This requirement is tested by the _isIdent
         method. No match with the argument simply returns False
         '''
-        if (self._inputToken == what) or self._isIdent( what ) :
-            if len(self._tokens) :
-                self._lastInputToken = self._inputToken
-                self._inputToken     = self._tokens.pop()
-            
-            else :
-                self._lastInputToken = self._inputToken
-                self._inputToken     = '<END>'
-            
+        if (self._inputToken == what) or self._isTag( what ) :
+            self._nextToken()
             return True
         
-        else :
+        else :  # a token that is not a tag or literal
             return False
     
     def _expr( self ) :
@@ -71,24 +72,17 @@ class TagExpr( object ) :
         self._term_tail()
         return self._match( '<END>' )
     
+    def _term( self ) :
+        '''<term> ::= <factor> <factor_tail>'''
+        self._factor()
+        self._factor_tail()
+    
     def _term_tail( self ) :
         '''<term_tail> ::= 'or' <term> <term_tail> | {}'''
         if self._match( 'or' ) :
             self._term()
             self._orOp()
             self._term_tail()
-    
-    def _term( self ) :
-        '''<term> ::= <factor> <factor_tail>'''
-        self._factor()
-        self._factor_tail()
-    
-    def _factor_tail( self ) :
-        '''<factor_tail> ::= 'and' <factor> <factor_tail> | {}'''
-        if self._match( 'and' ) :
-            self._factor()
-            self._andOp()
-            self._factor_tail()
     
     def _factor( self ) :
         '''<factor> ::= '(' <expr> ')' | 'not' <factor> | tag_name'''
@@ -99,20 +93,31 @@ class TagExpr( object ) :
         elif self._match( 'not' ) :
             self._factor()
             arg = self._operands.pop()
-            self._operands.append( self._mapTags['universe'].difference(arg) )
+            self._operands.append( self._mapTags['universe'] - arg )
         
         else :
-            self._match( '<id>' )
-            self._operands.append( self._mapTags[self._lastInputToken] )
+            if self._match( '<id>' ) :
+                self._operands.append( self._mapTags[self._lastInputToken] )
+            
+            else :
+                self._operands.append( set() )
+                self._nextToken()
+    
+    def _factor_tail( self ) :
+        '''<factor_tail> ::= 'and' <factor> <factor_tail> | {}'''
+        if self._match( 'and' ) :
+            self._factor()
+            self._andOp()
+            self._factor_tail()
     
     def _andOp( self ) :
         '''Perform set intersection'''
         rhs = self._operands.pop()
         lhs = self._operands.pop()
-        self._operands.append( lhs.intersection(rhs) )
+        self._operands.append( lhs & rhs )
     
     def _orOp( self ) :
         '''Perform set union'''
         rhs = self._operands.pop()
         lhs = self._operands.pop()
-        self._operands.append( lhs.union(rhs) )
+        self._operands.append( lhs | rhs )

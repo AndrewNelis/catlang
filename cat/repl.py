@@ -9,28 +9,18 @@ import traceback
 import readline
 from termcolor import colored
 
-MOTD = (
-    "all_words     -- prints a list of built-in Cat words (functions)",
-    "'wordName doc -- prints documentation for wordName",
-    "'wordName def -- prints the definition of wordName",
-    "'name help    -- prints documentation for words, modules, classes, etc",
-    "To run a series of tests use the word 'runtests'",
-    "'quit' or ^D exits the interpreter",
-    "\\ continues input onto a new line with prompt '...>'",
-)
-
-
 class REPL:
 
     def __init__(self, cat):
         self.cat = cat
 
     def print_motd(self):
-        if self.cat.ns.config.getboolean( 'misc', 'show_MOTD' ) :
-            i_c = self.cat.ns.config.get( 'display', 'info' )
-            
+        if self.cat.ns.config.getboolean( 'motd', 'show_MOTD' ) :
+            i_c  = self.cat.ns.config.get( 'display', 'info' )
+            MOTD = self.cat.ns.config.get( 'motd', 'MOTD' ).split( '$' )
+                        
             for line in MOTD:
-                self.cat.output(line, i_c)
+                self.cat.output( line.strip(), i_c )
     
     def run(self):
         self.print_motd()

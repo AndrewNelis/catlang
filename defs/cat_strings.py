@@ -376,5 +376,104 @@ def str_as_hex( cat ) :
     sss = ".".join( ss )
     cat.stack.push( sss.replace("0x", "") )
 
+@define(ns, 'l_justify')
+def left_justify( cat ) :
+    '''
+    l_justify : (string:src int:width string:fill -> string:justified_string)
+    
+    desc:
+        Left-justifies a source string in a frame 'width' characters wide filling
+        in on the right with the 'fill' string until the frame is filled.
+        src: the string to be left-justified
+        width: the width (in characters) of the frame to contain the justified string
+        fill: the fill character (a string of exactly 1 character)
+        justified_string: the resulting justified string
+        
+        Example: "Test text" 20 '. l_justify => "Test text..........."
+    tags:
+        string,justify,left
+    '''
+    fill, n, strng = cat.stack.pop_n( 3 )
+    cat.stack.push( strng.ljust(n, fill) )
+
+@define(ns, 'r_justify')
+def right_justify( cat ) :
+    '''
+    r_justify : (string:src int:width string:fill -> string:justified_string)
+    
+    desc:
+        Right-justifies a source string in a frame 'width' characters wide filling
+        in on the left with the 'fill' string until the frame is filled.
+        src: the string to be right-justified
+        width: the width (in characters) of the frame to contain the justified string
+        fill: the fill character (a string of exactly 1 character)
+        justified_string: the resulting justified string
+        
+        Example: "Test text" 20 '. r_justify => "...........Test text"
+    tags:
+        string,justify,right
+    '''
+    fill, n, strng = cat.stack.pop_n( 3 )
+    cat.stack.push( strng.rjust(n, fill) )
+
+@define(ns, 'center')
+def center_justify( cat ) :
+    '''
+    center : (string:src int:width string:fill -> string:justified_string)
+    
+    desc:
+        Centers a source string in a frame 'width' characters wide filling
+        in on the left and right with the 'fill' string until the frame is filled.
+        src: the string to be centered
+        width: the width (in characters) of the frame to contain the justified string
+        fill: the fill character (a string of exactly 1 character)
+        justified_string: the resulting justified string
+        
+        Example: "Test text" 20 '. center => ".....Test text......"
+    tags:
+        string,justify,center
+    '''
+    fill, n, strng = cat.stack.pop_n( 3 )
+    cat.stack.push( strng.center(n, fill) )
+
+@define(ns, 'table')
+def create_table( cat ) :
+    '''
+    table : (list:args list:labels_and_formats -> string:formatted_table)
+    
+    desc:
+        From a list of values and a list of labels and formats, a table
+        is created and pushed onto the stack.
+        args: a list of values to be formatted
+        labels_and_formats: a list of the form [ [string:label string:format] ... ] list
+            label: quoted string used as a label for a table row
+            format: standard python string formatting clause
+        formatted_table: the resulting table
+        
+        Example: [1 2 3] list [ ["line " '%2d] ["long line 2" '%2d] ["longest line 3" '%2d] ] list table =>
+                        line  ..............  1
+                        long line 2 ........  2
+                        longest line 3 .....  3
+    tags:
+        string,format,table
+    '''
+    labels, args = cat.stack.pop_2()
+    
+    # remove quotation marks
+    labels = [ [x[0].strip('"'), x[1].strip('"')] for x in labels ]
+    
+    # find maximum label length
+    labelLens = [ len(x[0]) for x in labels ]
+    maxLen    = max( labelLens ) + 6
+    
+    # prepare each row format
+    rowFmt = [ (x[0] + " ").ljust(maxLen,".") + " " + x[1] for x in labels ]
+    
+    # apply arguments to format
+    fmtRows = [ x % y for x,y in zip(rowFmt,args)]
+    
+    cat.stack.push( "\n".join(fmtRows) )
+
+
 def _returnNS() :
     return ns

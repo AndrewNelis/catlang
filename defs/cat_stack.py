@@ -18,11 +18,10 @@ def clear( cat ) :
     '''
     cat.stack.clear()
 
-@define(ns, 'pop,drop')
+@define(ns, 'pop')
 def pop( cat ) :
     '''
     pop  : (any:top_item -> --)
-    drop : (any:top_item -> --)
     
     desc:
         Removes the top item from the cat.stack
@@ -30,9 +29,27 @@ def pop( cat ) :
         
         Example: 1 2 pop => 1
     tags:
-        stack,pop,drop,top
+        stack,pop,top
     '''
     cat.stack.pop()
+
+@define(ns, 'drop')
+def drop( cat ) :
+    '''
+    drop : (any:items int:n -> --)
+    
+    desc:
+        Removes the top n items from the cat.stack
+        items: the items on the stack
+        
+        Example: 1 2 3 4 2 drop => 1 2
+    tags:
+        stack,drop,top
+    '''
+    n = cat.stack.pop()
+    m = cat.stack.length()
+    n = n if n < m else m
+    cat.stack.pop_n( n )
 
 @define(ns, 'popd,under')
 def popd( cat ) :
