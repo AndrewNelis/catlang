@@ -29,3 +29,6 @@ pip-log.txt
 
 # Mac related
 .DS_Store
+
+# PyCharm
+.idea
